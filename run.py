@@ -1,14 +1,14 @@
 import os
 
 import matplotlib.pyplot as plt
+import numpy
 import numpy as np
 from scipy.fft import fft
-from scipy.signal import correlate, find_peaks
+from scipy.signal import correlate
 
 N_join = ['elbow', 'hip', 'knee', 'ankle']
 N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 'SCI_14_dpi', 'SCI_TMT_14_dpi',
           'SCI_21_dpi', 'SCI_TMT_21_dpi', 'SCI_28_dpi', 'SCI_TMT_28_dpi']
-
 
 Np = len(N_join)
 
@@ -42,7 +42,7 @@ def analog_result(X_raw, p, titel):
     axes[1, 1].set_title('spector')
     axes[1, 1].legend()
 
-    X_raw[p] = correlate(X_raw[p], X_raw[p])
+    # X_raw[p] = correlate(X_raw[p], X_raw[p])
 
     axes[2, 0].plot(X_raw[p], label="spector")
     axes[2, 0].set_title('acorr2')
@@ -55,9 +55,43 @@ def analog_result(X_raw, p, titel):
 
 
 def porodi(X_raw, p):
-    peaks,_ = find_peaks(X_raw[p], height=(-10, 10))
-    plt.plot(X_raw[p])
-    plt.plot(peaks, X_raw[p][peaks],"*")
+    data = X_raw[p]
+    average_value = 0
+    average_arr = []
+    max_value=[]
+    dt = 60
+    position = 0
+    for i in range(0, len(data) - dt, dt):
+        subArr = np.std(data[i:i + dt])
+        print(subArr)
+        max_value.append(max(data[position:position + dt]))
+        for j in range(i, i + dt):
+            average_value += data[j]
+            data[j] = data[j] / subArr
+        average_arr.append(average_value / dt)
+        average_value = 0
+    plt.plot(data)
+    position = 0
+    for i in range(0, len(average_arr) - 1):
+        plt.plot([position, position + dt], [average_arr[i], average_arr[i]], color='black')
+        plt.plot([position + dt, position + dt], [average_arr[i], average_arr[i + 1]], color='black')
+        position += dt
+
+    temp = 0
+    position = 0
+    step_arr = []
+    raise_grad = True
+    for i in range(0, len(data) - dt):
+        if data[i] > average_arr[temp] and raise_grad:
+            step_arr.append(i)
+            raise_grad = False
+        if data[i] < average_arr[temp] and raise_grad == False:
+            step_arr.append(i)
+            raise_grad = True
+
+    for i in range(0, len(step_arr) - 1,2):
+        plt.plot([step_arr[i], step_arr[i+1]], [1,1], color ='red')
+        plt.grid(True)
     return
 
 
@@ -100,7 +134,7 @@ def build_plots(data, tbl):
 
         X_raw[p] = (column_data - mean_val) / std_val  # Normalize the data
 
-        #analog_result(X_raw, p, N_join[p])  # решение через Фурье
+        # analog_result(X_raw, p, N_join[p])  # решение через Фурье
         porodi(X_raw, p)
 
         plt.show()
