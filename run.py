@@ -56,41 +56,42 @@ def analog_result(X_raw, p, titel):
 
 def porodi(X_raw, p):
     data = X_raw[p]
-    average_value = 0
-    average_arr = []
-    max_value=[]
-    dt = 60
-    position = 0
+
+    sum_data_value = 0
+    average_value_arr = []  # средние значения с учетом частоты дискр.
+    dt = 60  # freq
+
     for i in range(0, len(data) - dt, dt):
         subArr = np.std(data[i:i + dt])
-        print(subArr)
-        max_value.append(max(data[position:position + dt]))
         for j in range(i, i + dt):
-            average_value += data[j]
             data[j] = data[j] / subArr
-        average_arr.append(average_value / dt)
-        average_value = 0
+            sum_data_value += data[j]
+        average_value_arr.append(sum_data_value / dt)
+        sum_data_value = 0
+
     plt.plot(data)
+
     position = 0
-    for i in range(0, len(average_arr) - 1):
-        plt.plot([position, position + dt], [average_arr[i], average_arr[i]], color='black')
-        plt.plot([position + dt, position + dt], [average_arr[i], average_arr[i + 1]], color='black')
+    for i in range(0, len(average_value_arr)-1):
+        plt.plot([position, position + dt], [average_value_arr[i], average_value_arr[i]], color='black')
+        plt.plot([position + dt, position + dt], [average_value_arr[i], average_value_arr[i + 1]], color='black')
         position += dt
 
     temp = 0
-    position = 0
     step_arr = []
     raise_grad = True
     for i in range(0, len(data) - dt):
-        if data[i] > average_arr[temp] and raise_grad:
+        if i % dt == 0 and i != 0:
+            temp += 1
+        if data[i] > average_value_arr[temp] and raise_grad:
             step_arr.append(i)
             raise_grad = False
-        if data[i] < average_arr[temp] and raise_grad == False:
+        if data[i] < average_value_arr[temp] and raise_grad == False:
             step_arr.append(i)
             raise_grad = True
 
-    for i in range(0, len(step_arr) - 1,2):
-        plt.plot([step_arr[i], step_arr[i+1]], [1,1], color ='red')
+    for i in range(0, len(step_arr) - 1, 2):
+        plt.plot([step_arr[i], step_arr[i + 1]], [1, 1], color='red')
         plt.grid(True)
     return
 
