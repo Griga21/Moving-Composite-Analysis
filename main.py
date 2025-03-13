@@ -242,5 +242,5 @@ for cond_idx in range(10,len(N_cond)): #Loop through the elements of an object 0
     for n, fname in enumerate(fnames):
         data, tbl = read_data(cond_dir, fname)
         analyze_data(data, tbl, idx_out, Np, TypeColor)
+        plt.show()
 # After the loops, keep the figures open
-plt.show()
