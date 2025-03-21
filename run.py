@@ -35,6 +35,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
 
     total_counet_steps_temp = []  # массив для одной группы
     total_time_steps_temp = []
+
     for n, fname in enumerate(fnames):
         data, tbl = read_data(cond_dir, fname)
         # total_counet_steps_temp.extend(build_plots(data, tbl, cond_dir))
@@ -44,5 +45,5 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
 
     total_count_steps.append(total_counet_steps_temp)
     total_time_steps.append(total_time_steps_temp)
-build_boxplots(total_count_steps)
+#build_boxplots(total_count_steps)
 #build_hist(total_count_steps, total_time_steps)

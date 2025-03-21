@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from algoritms import porodi
+from multi_thresh_1_test_cell_positions import multi_threash
 
 
 def build_plots(data_init, tbl, cond_dir):
@@ -33,7 +34,8 @@ def build_plots(data_init, tbl, cond_dir):
     #analog_result(X_raw, p, N_join[p])  # решение через Фурье
 
     plt.xlabel(data_init[0, 2])
-    plt.show()
+    multi_threash(X_raw)
+    #plt.show()
     return porodi(X_raw)
 
 def build_hist(total_count_steps, total_time_steps):
