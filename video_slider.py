@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 
 import cv2
@@ -21,6 +22,8 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 from matplotlib import pyplot as plt
+
+from deleteVCH import PlotWidget
 
 
 class VideoPlayerSlider(QMainWindow):
@@ -58,9 +61,16 @@ class VideoPlayerSlider(QMainWindow):
         # Main layout
         main_layout = QVBoxLayout()
 
+
         # Frame Display Label
         self.frame_label = QLabel(self)
-        main_layout.addWidget(self.frame_label)
+
+        self.plot_widget = PlotWidget()
+
+        horizontal_layout = QHBoxLayout()
+        horizontal_layout.addWidget(self.frame_label)
+        horizontal_layout.addWidget(self.plot_widget)
+        main_layout.addLayout(horizontal_layout)
 
         # Create a horizontal layout for buttons and slider
         button_layout = QHBoxLayout()
@@ -74,6 +84,7 @@ class VideoPlayerSlider(QMainWindow):
         open_csv_button = QPushButton("Load CSV")
         open_csv_button.clicked.connect(self.load_csv)
         button_layout.addWidget(open_csv_button)
+
 
         # Add buttons layout below the video
         main_layout.addLayout(button_layout)
@@ -194,8 +205,8 @@ class VideoPlayerSlider(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
         data_init = np.loadtxt(os.path.join('Intact',
-                                       'Intact_1_angles.csv'),
-                          delimiter=',', dtype=str)
+                                            'Intact_1_angles.csv'),
+                               delimiter=',', dtype=str)
         data = data_init[1:]
         data = data.astype(np.float64)
         column_data = data[0:, 2]
@@ -233,6 +244,7 @@ class VideoPlayerSlider(QMainWindow):
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 self.show_frame(position)
+                self.plot_csv_trajectories(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
@@ -241,7 +253,7 @@ class VideoPlayerSlider(QMainWindow):
             # Set the frame position in the video and read it
             self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             success, frame = self.video_cap.read()
-            # frame = frame[200:900, 500:1920]
+            frame = frame[300:900, 700:1920]
 
             if success:
                 # Overlay the frame number in the upper right corner
@@ -291,8 +303,14 @@ class VideoPlayerSlider(QMainWindow):
                 qimg = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
                 self.frame_label.setPixmap(QPixmap.fromImage(qimg))
 
+
         except Exception as e:
             self.show_error_message(f"Error showing frame: {e}")
+
+    def plot_csv_trajectories(self, frame_number):
+        print(frame_number)
+        self.plot_widget.plot_data([random.randint(0, 100) for _ in range(30)],
+                                [random.randint(0, 100) for _ in range(30)])
 
     def keyPressEvent(self, event):
         """Handle key press events for the slider navigation."""
