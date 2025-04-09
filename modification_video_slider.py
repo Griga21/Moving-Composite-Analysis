@@ -6,7 +6,8 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, \
+    QMainWindow, QSpinBox, QSlider, QFormLayout
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 import io
@@ -14,18 +15,41 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self._init_gui()
+        self.video_loaded = False
+        self.csv_data = pd.DataFrame()
+        self.coordinates = {}
+        self.video_cap = None
+        self.current_frame = 0
+        self.min_frame = 0
+        self.max_frame = 0
+        self.total_frames = 0
+
+        # Define colors for the dots (RGB format)
+        self.colors = [
+            (255, 0, 0),  # Red
+            (0, 255, 0),  # Green
+            (0, 0, 255),  # Blue
+            (255, 255, 0),  # Yellow
+            (255, 165, 0),  # Orange
+            (0, 255, 255),  # Cyan
+            (255, 0, 255),  # Magenta
+            (128, 0, 128),  # Purple
+            (0, 128, 128),  # Teal
+            (128, 128, 0),  # Olive
+        ]
+
+    def _init_gui(self):
 
         self.setWindowTitle("Image and Trajectory Plot")
 
-        # 1. Image Label
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.load_image("your_image.png")  # Replace with your image path
+        self.load_image("your_image.png")
 
-        # 2. Plot Widget (using Matplotlib and FigureCanvas)
         self.plot_widget = PlotWidget()
 
         # 3. Layout
@@ -36,27 +60,76 @@ class MainWindow(QWidget):
         horizontal_layout.addWidget(self.image_label)
         horizontal_layout.addWidget(self.plot_widget)
 
-        main_layout.addLayout(horizontal_layout)# Add the horizontal layout to the main layout
+        main_layout.addLayout(horizontal_layout)  # Add the horizontal layout to the main layout
+
+        self.setLayout(main_layout)
+
+        # Initial Plot Data (you can update this later)
+        self.plot_trajectory([random.randint(0, 100) for _ in range(50)],
+                             [random.randint(0, 100) for _ in range(50)])
 
         button_layout = QHBoxLayout()
+
+        # Open Video Button
         open_button = QPushButton("Open Video")
         open_button.clicked.connect(self.open_video)
         button_layout.addWidget(open_button)
 
         # Open CSV Button
         open_csv_button = QPushButton("Load CSV")
-        open_csv_button.clicked.connect(self.load_csv)
+        #open_csv_button.clicked.connect(self.load_csv)
         button_layout.addWidget(open_csv_button)
+
 
         # Add buttons layout below the video
         main_layout.addLayout(button_layout)
 
-        self.setLayout(main_layout)
+        navigation_layout = QHBoxLayout()
 
-        # Initial Plot Data (you can update this later)
-        self.plot_trajectory([random.randint(0, 100) for _ in range(30)],
-                                [random.randint(0, 100) for _ in range(30)])
+        # Slider for frame navigation
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setEnabled(False)
+        #self.slider.sliderMoved.connect(self.slider_changed)
+        self.slider.setFocusPolicy(
+            Qt.StrongFocus
+        )  # Ensure the slider can take keyboard focus
+        navigation_layout.addWidget(self.slider)
 
+        # Frame Range Input
+        form_layout = QFormLayout()
+
+        # Style sheet for making labels white
+        label_style = "QLabel { color : white; }"
+
+        self.min_frame_input = QSpinBox(self)
+        self.min_frame_input.setMinimum(0)  # Allow frames starting from 0
+        self.min_frame_input.setMaximum(1000000)  # Set a large maximum value
+        min_frame_label = QLabel("Min Frame:")
+        min_frame_label.setStyleSheet(label_style)  # Set label to white
+        form_layout.addRow(min_frame_label, self.min_frame_input)
+
+        self.max_frame_input = QSpinBox(self)
+        max_frame_label = QLabel("Max Frame:")
+        max_frame_label.setStyleSheet(label_style)  # Set label to white
+        form_layout.addRow(max_frame_label, self.max_frame_input)
+
+        set_range_button = QPushButton("Set Frame Range")
+        #set_range_button.clicked.connect(self.set_frame_range)
+        form_layout.addWidget(set_range_button)
+
+        navigation_layout.addLayout(form_layout)
+
+        # Add navigation layout below the video
+        main_layout.addLayout(navigation_layout)
+
+        # Container widget
+        container = QWidget()
+        container.setLayout(main_layout)
+        self.setCentralWidget(container)
+
+        # Set focus to the main window for keyboard events
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocus()
 
     def load_image(self, image_path):
         """Loads an image from the given path and displays it in the image label."""
@@ -67,11 +140,9 @@ class MainWindow(QWidget):
                 self.image_label.setText("Image not found")
                 return
 
-            print(self.image_label.width())
-            print(self.image_label.height())
-            self.image_label.setPixmap(pixmap.scaled(self.image_label.width()+300,
-                                                        self.image_label.height()+100,
-                                                        Qt.KeepAspectRatio))
+            self.image_label.setPixmap(pixmap.scaled(self.image_label.width(),
+                                                     self.image_label.height(),
+                                                     Qt.KeepAspectRatio))
         except Exception as e:
             print(f"Error loading image: {e}")
             self.image_label.setText("Error loading image")
@@ -106,7 +177,7 @@ class MainWindow(QWidget):
                 self.video_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
                 # Adjust QLabel size to match video resolution
-                self.frame_label.setFixedSize(self.video_width, self.video_height)
+                self.image_label.setFixedSize(self.video_width, self.video_height)
 
                 # Set window size to fit the video resolution properly
                 self.resize(
@@ -118,49 +189,6 @@ class MainWindow(QWidget):
         except Exception as e:
             self.show_error_message(f"Error loading video: {e}")
 
-    def load_csv(self):
-        try:
-                # Open file dialog to select CSV file
-            csv_file, _ = QFileDialog.getOpenFileName(
-                self, "Open CSV File", "", "CSV Files (*.csv)"
-            )
-            if csv_file:
-                    # Load CSV with pandas
-                temp_list = []
-                for i in range(19, 39):
-                    if i % 3 == 0:
-                        continue
-                    temp_list.append(i)
-                temp_list.append(0)
-                temp_list.sort()
-                self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
-
-                    # Parse columns and identify pairs of x, y coordinates
-                self.coordinates = {}
-                columns = self.csv_data.columns
-
-                for i in range(1, len(columns), 2):  # Skip 'frame' column (0 index)
-                    if "x" in columns[i].lower() and "y" in columns[i + 1].lower():
-                        label = columns[i].lower().replace("_", "").replace("x", "").strip()
-                        self.coordinates[label] = (columns[i], columns[i + 1])
-
-                print("Detected Coordinates Pairs:", self.coordinates)
-        except Exception as e:
-            self.show_error_message(f"Error loading CSV: {e}")
-        data_init = np.loadtxt(os.path.join('Intact',
-                                                'Intact_1_angles.csv'),
-                                   delimiter=',', dtype=str)
-        data = data_init[1:]
-        data = data.astype(np.float64)
-        column_data = data[0:, 2]
-        column_data = np.array(column_data)
-        column_data = column_data.astype(np.float64)
-
-        valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-        plt.ion()
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        line1, = ax.plot(valid_data, 'b-')
 
 class PlotWidget(QWidget):
     def __init__(self, parent=None):
@@ -168,7 +196,7 @@ class PlotWidget(QWidget):
 
         # Create Matplotlib figure and axes
         self.figure, self.ax = plt.subplots()
-        self.canvas = FigureCanvasQTAgg(self.figure) #FigureCanvasAgg(self.figure)
+        self.canvas = FigureCanvasQTAgg(self.figure)  # FigureCanvasAgg(self.figure)
 
         # Layout for the plot widget
         layout = QVBoxLayout()
@@ -184,8 +212,7 @@ class PlotWidget(QWidget):
         self.ax.set_xlabel("X Coordinate")
         self.ax.set_ylabel("Y Coordinate")
         self.ax.set_title("Trajectory Plot")
-        self.ax.grid(True) # Add grid lines
-
+        self.ax.grid(True)  # Add grid lines
 
         # Refresh canvas to show the updated plot
         self.canvas.draw_idle()
@@ -194,6 +221,6 @@ class PlotWidget(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.resize(1800, 1200)  # Set initial window size
+    window.resize(1500, 1000)  # Set initial window size
     window.show()
     sys.exit(app.exec_())

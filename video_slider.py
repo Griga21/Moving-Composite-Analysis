@@ -22,8 +22,9 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 from matplotlib import pyplot as plt
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
-from deleteVCH import PlotWidget
+from modification_video_slider import PlotWidget
 
 
 class VideoPlayerSlider(QMainWindow):
@@ -71,6 +72,9 @@ class VideoPlayerSlider(QMainWindow):
         horizontal_layout.addWidget(self.frame_label)
         horizontal_layout.addWidget(self.plot_widget)
         main_layout.addLayout(horizontal_layout)
+
+        self.plot_trajectory([random.randint(0, 100) for _ in range(50)],
+                             [random.randint(0, 100) for _ in range(50)])
 
         # Create a horizontal layout for buttons and slider
         button_layout = QHBoxLayout()
@@ -137,6 +141,10 @@ class VideoPlayerSlider(QMainWindow):
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
 
+    def plot_trajectory(self, x_coords, y_coords):
+        """Plots the trajectory data using the PlotWidget."""
+        self.plot_widget.plot_data(x_coords, y_coords)
+
     def open_video(self):
         try:
             # Open file dialog to select video
@@ -163,11 +171,11 @@ class VideoPlayerSlider(QMainWindow):
                 self.video_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
                 # Adjust QLabel size to match video resolution
-                self.frame_label.setFixedSize(self.video_width, self.video_height)
+                self.frame_label.setFixedSize(self.video_width- 600, self.video_height-600)
 
                 # Set window size to fit the video resolution properly
                 self.resize(
-                    self.video_width, self.video_height + 150
+                    self.video_width-600, self.video_height-600
                 )  # Add some height for the controls
 
                 self.show_frame(self.min_frame)
@@ -338,7 +346,32 @@ class VideoPlayerSlider(QMainWindow):
         if self.video_cap:
             self.video_cap.release()
         event.accept()
+class PlotWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
+        # Create Matplotlib figure and axes
+        self.figure, self.ax = plt.subplots()
+        self.canvas = FigureCanvasQTAgg(self.figure)  # FigureCanvasAgg(self.figure)
+
+        # Layout for the plot widget
+        layout = QVBoxLayout()
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+
+    def plot_data(self, x, y):
+        """Plots the given x and y data."""
+        self.ax.clear()  # Clear previous plot
+
+        self.ax.plot(x, y, marker='o', linestyle='-', color='blue')  # Plot trajectory
+
+        self.ax.set_xlabel("X Coordinate")
+        self.ax.set_ylabel("Y Coordinate")
+        self.ax.set_title("Trajectory Plot")
+        self.ax.grid(True)  # Add grid lines
+
+        # Refresh canvas to show the updated plot
+        self.canvas.draw_idle()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
