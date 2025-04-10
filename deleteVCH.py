@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
-    QMessageBox, QMainWindow
+    QMessageBox, QMainWindow, QComboBox
 from PyQt5.QtGui import QPixmap, QImage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -16,13 +16,10 @@ from PIL import Image
 class ImageGraphApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Смена изображения и графика")
-        self.setGeometry(100, 100, 800, 400)
-
-        self.image_index = 0
 
         self.setWindowTitle("Video Frame Viewer")
-        self.setGeometry(200, 200, 800, 600)
+        self.setGeometry(400, 50, 200, 200)
+        self.image_index = 0
 
         self.video_loaded = False
         self.csv_data = pd.DataFrame()
@@ -32,7 +29,7 @@ class ImageGraphApp(QMainWindow):
         self.min_frame = 0
         self.max_frame = 0
         self.total_frames = 0
-        self.data = []
+        self.combo_index = 0
 
         # Define colors for the dots (RGB format)
         self.colors = [
@@ -85,10 +82,21 @@ class ImageGraphApp(QMainWindow):
         self.open_csv_button = QPushButton("Open CSV")
         self.open_csv_button.clicked.connect(self.load_csv)
 
+        # Выбор траектории
+        self.combo = QComboBox()
+        self.combo.addItems(["elbow_collarbone_paw", "hip_iliac_crest_knee", "knee_hip_ankle", "ankle_knee_mtp", "All"])
+        self.combo.activated.connect(self.activated)
+        self.combo.currentTextChanged.connect(self.text_changed)
+        self.combo.currentIndexChanged.connect(self.index_changed)
+
         # Layout
+        figure_layout = QVBoxLayout()
+        figure_layout.addWidget(self.combo)
+        figure_layout.addWidget(self.canvas)
+
         h_layout = QHBoxLayout()
         h_layout.addWidget(self.image_label)
-        h_layout.addWidget(self.canvas)
+        h_layout.addLayout(figure_layout)
 
         buttons_layout = QHBoxLayout()
         buttons_layout.addWidget(self.back_button)
@@ -107,7 +115,7 @@ class ImageGraphApp(QMainWindow):
         v_layout.addLayout(buttons_layout)
         v_layout.addLayout(buttons_video_layout)
 
-        #self.setLayout(v_layout)
+        # self.setLayout(v_layout)
         container = QWidget()
         container.setLayout(v_layout)
         self.setCentralWidget(container)
@@ -116,8 +124,22 @@ class ImageGraphApp(QMainWindow):
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
 
-        # Первый вызов
-        # self.update_content()
+    def activated(Self, index):
+        print("Activated index:", index)
+
+    def text_changed(self, s):
+        print("Text changed:", s)
+
+    def index_changed(self, index):
+        print("Index changed", index)
+        self.combo_index = index
+        column_data = self.data[0:, self.combo_index]
+        column_data = np.array(column_data)
+        column_data = column_data.astype(np.float64)
+        self.valid_data = column_data[~np.isnan(column_data)]
+
+        self.update_content(self.slider.value())
+
 
     def update_content(self, position):
         # Обновляем график
@@ -127,8 +149,8 @@ class ImageGraphApp(QMainWindow):
             x = np.linspace(0, 120, 120)
             y = self.valid_data[0:120]
         else:
-            x = np.linspace(position- 60, position+60, 120)
-            y = self.valid_data[position-60:position + 60]
+            x = np.linspace(position - 60, position + 60, 120)
+            y = self.valid_data[position - 60:position + 60]
 
         self.ax.plot(x, y)
         self.ax.scatter(position, self.valid_data[position], marker='D', s=50, c="red")
@@ -136,8 +158,12 @@ class ImageGraphApp(QMainWindow):
 
         self.canvas.draw()
 
-        # Переключение
-        self.image_index = (self.image_index + 1) % 2
+    def build_three_plots(self):
+        self.ax = self.figure.add_subplot(141)
+        self.bx = self.figure.add_subplot(142)
+        self.cx = self.figure.add_subplot(143)
+        self.dx = self.figure.add_subplot(144)
+        self.canvas.draw()
 
     def open_video(self):
         try:
@@ -165,6 +191,10 @@ class ImageGraphApp(QMainWindow):
 
                 self.show_frame(0)
 
+                self.ax.clear()
+                self.canvas.draw()
+                self.valid_data = []
+
         except Exception as e:
             self.show_error_message(f"Error loading video: {e}")
 
@@ -176,12 +206,13 @@ class ImageGraphApp(QMainWindow):
             )
             if csv_file:
                 # Load CSV with pandas
-                data_init = np.loadtxt(os.path.join('SCI_3_dpi',
-                                                    'SCI_3_dpi_1_angles.csv'),
-                                       delimiter=',', dtype=str)
+
+                data_init = np.loadtxt(os.path.join(
+                    csv_file),
+                    delimiter=',', dtype=str)
                 data = data_init[1:]
-                data = data.astype(np.float64)
-                column_data = data[0:, 2]
+                self.data = data.astype(np.float64)
+                column_data = data[0:, self.combo_index]
                 column_data = np.array(column_data)
                 column_data = column_data.astype(np.float64)
 
