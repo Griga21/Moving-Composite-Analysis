@@ -30,6 +30,7 @@ class ImageGraphApp(QMainWindow):
         self.max_frame = 0
         self.total_frames = 0
         self.combo_index = 0
+        self.combo_text = "elbow_collarbone_paw"
 
         # Define colors for the dots (RGB format)
         self.colors = [
@@ -52,9 +53,10 @@ class ImageGraphApp(QMainWindow):
         self.image_label.setFixedSize(900, 900)
 
         # Виджет для графика
-        self.figure = Figure(figsize=(4, 3), dpi=100)
+        self.figure = Figure(figsize=(4, 3), dpi=80)
         self.canvas = FigureCanvas(self.figure)
         self.ax = self.figure.add_subplot(111)
+
 
         self.slider = QSlider(Qt.Horizontal)
         # Slider for frame navigation
@@ -85,7 +87,6 @@ class ImageGraphApp(QMainWindow):
         # Выбор траектории
         self.combo = QComboBox()
         self.combo.addItems(["elbow_collarbone_paw", "hip_iliac_crest_knee", "knee_hip_ankle", "ankle_knee_mtp", "All"])
-        self.combo.activated.connect(self.activated)
         self.combo.currentTextChanged.connect(self.text_changed)
         self.combo.currentIndexChanged.connect(self.index_changed)
 
@@ -124,45 +125,71 @@ class ImageGraphApp(QMainWindow):
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
 
-    def activated(Self, index):
-        print("Activated index:", index)
-
     def text_changed(self, s):
-        print("Text changed:", s)
-
-    def index_changed(self, index):
-        print("Index changed", index)
-        self.combo_index = index
-        column_data = self.data[0:, self.combo_index]
-        column_data = np.array(column_data)
-        column_data = column_data.astype(np.float64)
-        self.valid_data = column_data[~np.isnan(column_data)]
-
+        self.combo_text = s
         self.update_content(self.slider.value())
 
+    def index_changed(self, index):
+        self.combo_index = index
+        self.figure.clear()
+        self.ax = self.figure.add_subplot(111)
+
+        if self.combo_index != 4:
+            column_data = self.data[0:, self.combo_index]
+            column_data = np.array(column_data)
+            column_data = column_data.astype(np.float64)
+            self.valid_data = column_data[~np.isnan(column_data)]
+            self.update_content(self.slider.value())
+        else:
+            self.ax = self.figure.add_subplot(411)
+            self.bx = self.figure.add_subplot(412)
+            self.cx = self.figure.add_subplot(413)
+            self.dx = self.figure.add_subplot(414)
+            self.build_three_plots(self.slider.value())
 
     def update_content(self, position):
         # Обновляем график
         self.ax.clear()
         point = 0
-        if position < 60:
-            x = np.linspace(0, 120, 120)
-            y = self.valid_data[0:120]
+        if position < 30:
+            x = np.linspace(0, 60, 60)
+            y = self.valid_data[0:60]
         else:
-            x = np.linspace(position - 60, position + 60, 120)
-            y = self.valid_data[position - 60:position + 60]
+            x = np.linspace(position - 30, position + 30, 60)
+            y = self.valid_data[position - 30:position + 30]
 
         self.ax.plot(x, y)
         self.ax.scatter(position, self.valid_data[position], marker='D', s=50, c="red")
-        self.ax.set_title(f"График knee_hip_ankle")
+        self.ax.set_title(f"График {self.combo_text}")
 
         self.canvas.draw()
 
-    def build_three_plots(self):
-        self.ax = self.figure.add_subplot(141)
-        self.bx = self.figure.add_subplot(142)
-        self.cx = self.figure.add_subplot(143)
-        self.dx = self.figure.add_subplot(144)
+    def build_three_plots(self, position):
+        self.ax.clear()
+        self.bx.clear()
+        self.cx.clear()
+        self.dx.clear()
+
+        self.ax.scatter(position, self.data[position, 0], marker='D', s=50, c="red")
+        self.ax.set_title(f"График elbow_collarbone_paw")
+        self.bx.scatter(position, self.data[position, 1], marker='D', s=50, c="red")
+        self.bx.set_title(f"График hip_iliac_crest_knee")
+        self.cx.scatter(position, self.data[position, 2], marker='D', s=50, c="red")
+        self.cx.set_title(f"График knee_hip_ankle")
+        self.dx.scatter(position, self.data[position, 3], marker='D', s=50, c="red")
+        self.dx.set_title(f"График ankle_knee_mtp")
+
+        if position < 30:
+            self.ax.plot(np.linspace(0, 60, 60), self.data[0:60, 0])
+            self.bx.plot(np.linspace(0, 60, 60), self.data[0:60, 1])
+            self.cx.plot(np.linspace(0, 60, 60), self.data[0:60, 2])
+            self.dx.plot(np.linspace(0, 60, 60), self.data[0:60, 3])
+        else:
+            self.ax.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 0])
+            self.bx.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 1])
+            self.cx.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 2])
+            self.dx.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 3])
+
         self.canvas.draw()
 
     def open_video(self):
@@ -289,7 +316,10 @@ class ImageGraphApp(QMainWindow):
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 self.show_frame(position)
-                self.update_content(position)
+                if self.combo_index != 4:
+                    self.update_content(position)
+                else:
+                    self.build_three_plots(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
@@ -300,7 +330,10 @@ class ImageGraphApp(QMainWindow):
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 self.show_frame(position)
-                self.update_content(position)
+                if self.combo_index != 4:
+                    self.update_content(position)
+                else:
+                    self.build_three_plots(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
@@ -311,7 +344,10 @@ class ImageGraphApp(QMainWindow):
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 self.show_frame(position)
-                self.update_content(position)
+                if self.combo_index != 4:
+                    self.update_content(position)
+                else:
+                    self.build_three_plots(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
@@ -322,12 +358,19 @@ class ImageGraphApp(QMainWindow):
             if new_value <= self.max_frame:
                 self.slider.setValue(new_value)
                 self.show_frame(new_value)
-                self.update_content(new_value)
+                if self.combo_index != 4:
+                    self.update_content(new_value)
+                else:
+                    self.build_three_plots(new_value)
         elif event.key() == Qt.Key_Left:  # Left arrow key
             new_value = self.slider.value() - 1
             if new_value >= self.min_frame:
                 self.slider.setValue(new_value)
-                self.update_content(new_value)
+                self.show_frame(new_value)
+                if self.combo_index != 4:
+                    self.update_content(new_value)
+                else:
+                    self.build_three_plots(new_value)
         else:
             super().keyPressEvent(event)
 
