@@ -3,7 +3,6 @@ from matplotlib import pyplot as plt
 from scipy.fft import fft
 from scipy.signal import correlate
 
-from deleteVCH import delete_VCH
 
 
 def normalize_data(average_value_arr, data, dt):

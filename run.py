@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from statsmodels.sandbox.tsa import movmean
 
 from visualization_data import build_plots, build_hist, build_boxplots
 

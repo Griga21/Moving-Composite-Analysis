@@ -71,7 +71,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
                        delimiter=',', dtype=str)
         data = data_init[1:]
         data = data.astype(np.float64)
-        column_data = data[0:, 2]
+        column_data = data[0:, 3]
         column_data = np.array(column_data)
         column_data = column_data.astype(np.float64)
 

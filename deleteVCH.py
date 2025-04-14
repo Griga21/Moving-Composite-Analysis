@@ -22,8 +22,10 @@ class ImageGraphApp(QMainWindow):
         self.image_index = 0
 
         self.video_loaded = False
-        self.csv_data = pd.DataFrame()
-        self.coordinates = {}
+        self.csv_data = pd.DataFrame()  # дата с траетория движния всех суставов
+        self.coordinates = {}  # координаты с траетория движния всех суставов
+        self.data_angels = []  # многомерный массив со всеми данными углов
+        self.data_coordinates = []  # координаты  отслеживаемых точек
         self.video_cap = None
         self.current_frame = 0
         self.min_frame = 0
@@ -57,7 +59,6 @@ class ImageGraphApp(QMainWindow):
         self.canvas = FigureCanvas(self.figure)
         self.ax = self.figure.add_subplot(111)
 
-
         self.slider = QSlider(Qt.Horizontal)
         # Slider for frame navigation
 
@@ -81,8 +82,11 @@ class ImageGraphApp(QMainWindow):
         self.open_video_button = QPushButton("Open Video")
         self.open_video_button.clicked.connect(self.open_video)
 
-        self.open_csv_button = QPushButton("Open CSV")
-        self.open_csv_button.clicked.connect(self.load_csv)
+        self.open_csv_trajectory_button = QPushButton("Open CSV trajectory")
+        self.open_csv_trajectory_button.clicked.connect(self.load_csv_data_coordinate)
+
+        self.open_csv_button = QPushButton("Open CSV angels")
+        self.open_csv_button.clicked.connect(self.load_csv_angles)
 
         # Выбор траектории
         self.combo = QComboBox()
@@ -105,6 +109,7 @@ class ImageGraphApp(QMainWindow):
 
         buttons_video_layout = QHBoxLayout()
         buttons_video_layout.addWidget(self.open_video_button)
+        buttons_video_layout.addWidget(self.open_csv_trajectory_button)
         buttons_video_layout.addWidget(self.open_csv_button)
 
         navigation_layout = QHBoxLayout()
@@ -135,7 +140,7 @@ class ImageGraphApp(QMainWindow):
         self.ax = self.figure.add_subplot(111)
 
         if self.combo_index != 4:
-            column_data = self.data[0:, self.combo_index]
+            column_data = self.data_angels[0:, self.combo_index]
             column_data = np.array(column_data)
             column_data = column_data.astype(np.float64)
             self.valid_data = column_data[~np.isnan(column_data)]
@@ -170,25 +175,29 @@ class ImageGraphApp(QMainWindow):
         self.cx.clear()
         self.dx.clear()
 
-        self.ax.scatter(position, self.data[position, 0], marker='D', s=50, c="red")
+        self.ax.scatter(position, self.data_angels[position, 0], marker='D', s=50, c="red")
         self.ax.set_title(f"График elbow_collarbone_paw")
-        self.bx.scatter(position, self.data[position, 1], marker='D', s=50, c="red")
+        self.bx.scatter(position, self.data_angels[position, 1], marker='D', s=50, c="red")
         self.bx.set_title(f"График hip_iliac_crest_knee")
-        self.cx.scatter(position, self.data[position, 2], marker='D', s=50, c="red")
+        self.cx.scatter(position, self.data_angels[position, 2], marker='D', s=50, c="red")
         self.cx.set_title(f"График knee_hip_ankle")
-        self.dx.scatter(position, self.data[position, 3], marker='D', s=50, c="red")
+        self.dx.scatter(position, self.data_angels[position, 3], marker='D', s=50, c="red")
         self.dx.set_title(f"График ankle_knee_mtp")
 
         if position < 30:
-            self.ax.plot(np.linspace(0, 60, 60), self.data[0:60, 0])
-            self.bx.plot(np.linspace(0, 60, 60), self.data[0:60, 1])
-            self.cx.plot(np.linspace(0, 60, 60), self.data[0:60, 2])
-            self.dx.plot(np.linspace(0, 60, 60), self.data[0:60, 3])
+            self.ax.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 0])
+            self.bx.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 1])
+            self.cx.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 2])
+            self.dx.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 3])
         else:
-            self.ax.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 0])
-            self.bx.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 1])
-            self.cx.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 2])
-            self.dx.plot(np.linspace(position - 30, position + 30, 60), self.data[position - 30:position + 30, 3])
+            self.ax.plot(np.linspace(position - 30, position + 30, 60),
+                         self.data_angels[position - 30:position + 30, 0])
+            self.bx.plot(np.linspace(position - 30, position + 30, 60),
+                         self.data_angels[position - 30:position + 30, 1])
+            self.cx.plot(np.linspace(position - 30, position + 30, 60),
+                         self.data_angels[position - 30:position + 30, 2])
+            self.dx.plot(np.linspace(position - 30, position + 30, 60),
+                         self.data_angels[position - 30:position + 30, 3])
 
         self.canvas.draw()
 
@@ -225,7 +234,7 @@ class ImageGraphApp(QMainWindow):
         except Exception as e:
             self.show_error_message(f"Error loading video: {e}")
 
-    def load_csv(self):
+    def load_csv_angles(self):
         try:
             # Open file dialog to select CSV file
             csv_file, _ = QFileDialog.getOpenFileName(
@@ -238,26 +247,59 @@ class ImageGraphApp(QMainWindow):
                     csv_file),
                     delimiter=',', dtype=str)
                 data = data_init[1:]
-                self.data = data.astype(np.float64)
+                self.data_angels = data.astype(np.float64)
                 column_data = data[0:, self.combo_index]
                 column_data = np.array(column_data)
                 column_data = column_data.astype(np.float64)
-
                 self.valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
+
+        except Exception as e:
+            self.show_error_message(f"Error loading CSV: {e}")
+
+    def load_csv_data_coordinate(self):
+        try:
+            # Open file dialog to select CSV file
+            csv_file, _ = QFileDialog.getOpenFileName(
+                self, "Open CSV File", "", "CSV Files (*.csv)"
+            )
+            if csv_file:
+                # Load CSV with pandas
+                temp_list = []
+                for i in range(19, 39):
+                    if i % 3 == 0:
+                        continue
+                    temp_list.append(i)
+                temp_list.append(0)
+                temp_list.sort()
+                self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
+
+                # Parse columns and identify pairs of x, y coordinates
+                self.coordinates = {}
+                columns = self.csv_data.columns
+
+                for i in range(1, len(columns), 2):  # Skip 'frame' column (0 index)
+                    if "x" in columns[i].lower() and "y" in columns[i + 1].lower():
+                        label = columns[i].lower().replace("_", "").replace("x", "").strip()
+                        self.coordinates[label] = (columns[i], columns[i + 1])
                 print("Detected Coordinates Pairs:", self.coordinates)
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
+        data_init = np.loadtxt(os.path.join(csv_file),
+                               delimiter=',', dtype=str)
+        data = data_init[1:]
+        data = data.astype(np.float64)
+        column_data = data[0:, 2]
+        column_data = np.array(column_data)
+        column_data = column_data.astype(np.float64)
+
+        self.data_coordinates = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
 
     def show_frame(self, frame_number):
         try:
             # Set the frame position in the video and read it
             self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             success, frame = self.video_cap.read()
-            scale_percent = 45
-            width = int(frame.shape[1] * scale_percent / 100)
-            height = int(frame.shape[0] * scale_percent / 100)
-            dim = (width, height)
-            frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
 
             if success:
                 # Overlay the frame number in the upper right corner
@@ -272,8 +314,8 @@ class ImageGraphApp(QMainWindow):
                 cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness, cv2.LINE_AA)
 
                 # If CSV data is available, plot the dots and connect them
-                if not self.csv_data.empty and frame_number in self.csv_data['frame'].values:
-                    row_data = self.csv_data[self.csv_data['frame'] == frame_number]
+                if not self.csv_data.empty and frame_number in self.csv_data['coords'].values:
+                    row_data = self.csv_data[self.csv_data['coords'] == frame_number]
 
                     # List of points to connect with lines (order: crest -> hip -> knee -> ankle -> mtp -> toe)
                     key_points = ['iliaccrest', 'hip', 'knee', 'ankle', 'mtp', 'toe']
@@ -299,6 +341,14 @@ class ImageGraphApp(QMainWindow):
                         start_point = points[i]
                         end_point = points[i + 1]
                         cv2.line(frame, start_point, end_point, (0, 255, 255), 2)  # Yellow line with thickness 2
+
+
+                scale_percent = 45
+                width = int(frame.shape[1] * scale_percent / 100)
+                height = int(frame.shape[0] * scale_percent / 100)
+                dim = (width, height)
+                frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
 
                 # Convert the frame to QImage format and display it
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

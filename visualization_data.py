@@ -1,13 +1,14 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from statsmodels.sandbox.tsa import movmean
 
 from algoritms import porodi
-from multi_thresh_1_test_cell_positions import multi_threash
 
 
 def build_plots(data_init, tbl, cond_dir):
     data = data_init[1:]
     data = data.astype(np.float64)
+
     plt.title(cond_dir)
     # Plot the normalized data
     # for p in range(Np):  # Use 0 based indexing for loop
@@ -18,6 +19,7 @@ def build_plots(data_init, tbl, cond_dir):
     column_data = column_data.astype(np.float64)
 
     valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
+    valid_data = movmean(valid_data, 120)
     if valid_data.size == 0:
         print(f"Warning: All values in data[:, 2] are NaN. Skipping normalization and plotting.")
         # continue  # Skip to the next value of p
@@ -34,8 +36,7 @@ def build_plots(data_init, tbl, cond_dir):
     #analog_result(X_raw, p, N_join[p])  # решение через Фурье
 
     plt.xlabel(data_init[0, 2])
-    multi_threash(X_raw)
-    #plt.show()
+ #plt.show()
     return porodi(X_raw)
 
 def build_hist(total_count_steps, total_time_steps):

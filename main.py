@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from scipy.signal import find_peaks
+from statsmodels.sandbox.tsa import movmean
 
 N_join = ['elbow', 'hip', 'knee', 'ankle']
 N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 'SCI_14_dpi', 'SCI_TMT_14_dpi', 'SCI_21_dpi',
@@ -56,6 +57,7 @@ def analyze_data(data, tbl, idx_out, Np, TypeColor):
             column_data = column_data.astype(np.float64)
             # Omit NaN values for mean and std calculation. NumPy handles this easily.
             valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
+            valid_data = movmean(valid_data, 200)
             if valid_data.size == 0:
                 print(f"Warning: All values in data[:, {p}] are NaN. Skipping normalization and plotting.")
                 continue  # Skip to the next value of p
