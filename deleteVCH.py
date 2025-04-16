@@ -11,6 +11,7 @@ from PyQt5.QtGui import QPixmap, QImage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
+from scipy.signal import find_peaks
 
 from statsmodels.sandbox.tsa import movmean
 
@@ -182,34 +183,35 @@ class ImageGraphApp(QMainWindow):
         self.cx.set_title(f"График knee_hip_ankle")
         self.dx.set_title(f"График ankle_knee_mtp")
 
-        if position < 30:
-            self.ax.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 0],
-                         np.linspace(0, 60, 60), self.data_angels_movmean[0:60, 0])
-            self.bx.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 1],
-                         np.linspace(0, 60, 60), self.data_angels_movmean[0:60, 1])
-            self.cx.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 2],
-                         np.linspace(0, 60, 60), self.data_angels_movmean[0:60, 2])
-            self.dx.plot(np.linspace(0, 60, 60), self.data_angels[0:60, 3],
-                         np.linspace(0, 60, 60), self.data_angels_movmean[0:60, 3])
+        if position < 60:
+            self.ax.plot(np.linspace(0, 120, 120), self.data_angels[0][0:120],
+                         np.linspace(0, 120, 120), self.data_angels_movmean[0][0:120])
+            self.bx.plot(np.linspace(0, 120, 120), self.data_angels[1][0:120],
+                         np.linspace(0, 120, 120), self.data_angels_movmean[1][0:120])
+            self.cx.plot(np.linspace(0, 120, 120), self.data_angels[2][0:120],
+                         np.linspace(0, 120, 120), self.data_angels_movmean[2][0:120])
+            self.dx.plot(np.linspace(0, 120, 120), self.data_angels[3][0:120],
+                         np.linspace(0, 120, 120), self.data_angels_movmean[3][0:120])
+
         else:
-            self.ax.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels[position - 30:position + 30, 0])
-            self.ax.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels_movmean[position - 30:position + 30, 0])
+            self.ax.plot(np.linspace(position - 60, position + 60, 120),
+                         self.data_angels[0][position - 60:position + 60])
+            self.ax.plot(np.linspace(position - 60, position + 60, 120),
+                         self.data_angels_movmean[0][position - 60:position + 60])
 
-            self.bx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels[position - 30:position + 30, 1])
-            self.bx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels_movmean[position - 30:position + 30, 1])
+            self.bx.plot(np.linspace(position - 60, position + 60, 120),
+                         self.data_angels[1][position - 60:position + 60])
+            self.bx.plot(np.linspace(position - 60, position + 60, 120),
+                         self.data_angels_movmean[1][position - 60:position + 60])
 
             self.cx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels[position - 30:position + 30, 2])
+                         self.data_angels[2][position - 30:position + 30])
             self.cx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels_movmean[position - 30:position + 30, 2])
+                         self.data_angels_movmean[2][position - 30:position + 30])
             self.dx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels[position - 30:position + 30, 3])
+                         self.data_angels[3][position - 30:position + 30])
             self.dx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels_movmean[position - 30:position + 30, 3])
+                         self.data_angels_movmean[3][position - 30:position + 30])
 
         self.ax.axvline(position,-200, 200, c= "red")
         self.bx.axvline(position, -200, 200, c= "red")
@@ -263,14 +265,14 @@ class ImageGraphApp(QMainWindow):
                     csv_file),
                     delimiter=',', dtype=str)
                 data = data_init[1:]
-                self.data_angels = data.astype(np.float64)
-                column_data = data[0:, self.combo_index]
-                column_data = np.array(column_data)
-                column_data = column_data.astype(np.float64)
-                for i in range(self.data_angels.shape[1]):
-                    self.data_angels_movmean.append(movmean(self.data_angels[i], 120))
-                self.valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-
+                data = data.astype(np.float64)
+                for i in range(0,4):
+                    column_data = data[0:, i]
+                    column_data = np.array(column_data)
+                    column_data = column_data.astype(np.float64)
+                    self.valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
+                    self.data_angels.append(self.valid_data)
+                    self.data_angels_movmean.append(movmean(self.valid_data, 120))
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
 

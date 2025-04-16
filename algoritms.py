@@ -14,7 +14,7 @@ def normalize_data(average_value_arr, data, dt):
             sum_data_value += data[j]
         average_value_arr.append(sum_data_value / dt)
         sum_data_value = 0
-    plt.plot(data)
+    #plt.plot(data)
     return data
 
 
