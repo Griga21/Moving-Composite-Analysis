@@ -5,14 +5,12 @@ import cv2
 import numpy as np
 import pandas as pd
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
     QMessageBox, QMainWindow, QComboBox
-from PyQt5.QtGui import QPixmap, QImage
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PIL import Image
-from scipy.signal import find_peaks
-
+from numpy.ma.core import zeros
 from statsmodels.sandbox.tsa import movmean
 
 
@@ -144,10 +142,13 @@ class ImageGraphApp(QMainWindow):
         self.ax = self.figure.add_subplot(111)
 
         if self.combo_index != 4:
-            column_data = self.data_angels[0:, self.combo_index]
+            column_data = self.data_angels[self.combo_index]
             column_data = np.array(column_data)
             column_data = column_data.astype(np.float64)
             self.valid_data = column_data[~np.isnan(column_data)]
+            self.data_angels_movmean = np.zeros(len(self.valid_data))
+            self.count_steps(self.valid_data)
+            print(self.data_angels_movmean)
             self.update_content(self.slider.value())
         else:
             self.ax = self.figure.add_subplot(411)
@@ -160,16 +161,17 @@ class ImageGraphApp(QMainWindow):
         # Обновляем график
         self.ax.clear()
         point = 0
-        if position < 30:
-            x = np.linspace(0, 60, 60)
-            y = self.valid_data[0:60]
+        if position < 60:
+            x = np.linspace(0, 120, 120)
+            y = self.valid_data[0:120]
+
         else:
-            x = np.linspace(position - 30, position + 30, 60)
-            y = self.valid_data[position - 30:position + 30]
+            x = np.linspace(position - 60, position + 60, 120)
+            y = self.valid_data[position - 60:position + 60]
 
         self.ax.plot(x, y)
         self.ax.set_title(f"График {self.combo_text}")
-        self.ax.axvline(position,-200, 200, c= "red", linestyle = "--")
+        self.ax.axvline(position, -200, 200, c="red", linestyle="--")
         self.canvas.draw()
 
     def build_three_plots(self, position):
@@ -184,39 +186,26 @@ class ImageGraphApp(QMainWindow):
         self.dx.set_title(f"График ankle_knee_mtp")
 
         if position < 60:
-            self.ax.plot(np.linspace(0, 120, 120), self.data_angels[0][0:120],
-                         np.linspace(0, 120, 120), self.data_angels_movmean[0][0:120])
-            self.bx.plot(np.linspace(0, 120, 120), self.data_angels[1][0:120],
-                         np.linspace(0, 120, 120), self.data_angels_movmean[1][0:120])
-            self.cx.plot(np.linspace(0, 120, 120), self.data_angels[2][0:120],
-                         np.linspace(0, 120, 120), self.data_angels_movmean[2][0:120])
-            self.dx.plot(np.linspace(0, 120, 120), self.data_angels[3][0:120],
-                         np.linspace(0, 120, 120), self.data_angels_movmean[3][0:120])
+            self.ax.plot(np.linspace(0, 120, 120), self.data_angels[0][0:120])
+            self.bx.plot(np.linspace(0, 120, 120), self.data_angels[1][0:120])
+            self.cx.plot(np.linspace(0, 120, 120), self.data_angels[2][0:120])
+            self.dx.plot(np.linspace(0, 120, 120), self.data_angels[3][0:120])
 
         else:
             self.ax.plot(np.linspace(position - 60, position + 60, 120),
                          self.data_angels[0][position - 60:position + 60])
-            self.ax.plot(np.linspace(position - 60, position + 60, 120),
-                         self.data_angels_movmean[0][position - 60:position + 60])
-
             self.bx.plot(np.linspace(position - 60, position + 60, 120),
                          self.data_angels[1][position - 60:position + 60])
-            self.bx.plot(np.linspace(position - 60, position + 60, 120),
-                         self.data_angels_movmean[1][position - 60:position + 60])
 
-            self.cx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels[2][position - 30:position + 30])
-            self.cx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels_movmean[2][position - 30:position + 30])
-            self.dx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels[3][position - 30:position + 30])
-            self.dx.plot(np.linspace(position - 30, position + 30, 60),
-                         self.data_angels_movmean[3][position - 30:position + 30])
+            self.cx.plot(np.linspace(position - 60, position + 60, 120),
+                         self.data_angels[2][position - 60:position + 60])
+            self.dx.plot(np.linspace(position - 60, position + 60, 120),
+                         self.data_angels[3][position - 60:position + 60])
 
-        self.ax.axvline(position,-200, 200, c= "red")
-        self.bx.axvline(position, -200, 200, c= "red")
-        self.cx.axvline(position, -200, 200, c= "red")
-        self.dx.axvline(position, -200, 200, c= "red")
+        self.ax.axvline(position, -200, 200, c="red")
+        self.bx.axvline(position, -200, 200, c="red")
+        self.cx.axvline(position, -200, 200, c="red")
+        self.dx.axvline(position, -200, 200, c="red")
         self.canvas.draw()
 
     def open_video(self):
@@ -266,13 +255,13 @@ class ImageGraphApp(QMainWindow):
                     delimiter=',', dtype=str)
                 data = data_init[1:]
                 data = data.astype(np.float64)
-                for i in range(0,4):
+                for i in range(0, 4):
                     column_data = data[0:, i]
                     column_data = np.array(column_data)
                     column_data = column_data.astype(np.float64)
                     self.valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
                     self.data_angels.append(self.valid_data)
-                    self.data_angels_movmean.append(movmean(self.valid_data, 120))
+                    self.data_angels_movmean.append(self.count_steps(self.data_angels))
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
 
@@ -320,7 +309,6 @@ class ImageGraphApp(QMainWindow):
             self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             success, frame = self.video_cap.read()
 
-
             if success:
                 # Overlay the frame number in the upper right corner
                 text = f"Frame: {frame_number}"
@@ -362,13 +350,11 @@ class ImageGraphApp(QMainWindow):
                         end_point = points[i + 1]
                         cv2.line(frame, start_point, end_point, (0, 255, 255), 2)  # Yellow line with thickness 2
 
-
                 scale_percent = 45
                 width = int(frame.shape[1] * scale_percent / 100)
                 height = int(frame.shape[0] * scale_percent / 100)
                 dim = (width, height)
                 frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-
 
                 # Convert the frame to QImage format and display it
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -455,6 +441,64 @@ class ImageGraphApp(QMainWindow):
         if self.video_cap:
             self.video_cap.release()
         event.accept()
+
+    def local_extrema_windowed(self, signal, window_size=7, mode='max'):
+        half = window_size // 2
+        extrema_indices = []
+
+        for i in range(half, len(signal) - half):
+            window = signal[i - half:i + half + 1]
+            center = signal[i]
+
+            if mode == 'max' and center == np.max(window):
+                extrema_indices.append(i)
+            elif mode == 'min' and center == np.min(window):
+                extrema_indices.append(i)
+
+        return extrema_indices
+
+    def count_steps(self, local_data):
+        peaks_max = self.local_extrema_windowed(local_data)
+
+        peaks_min = self.local_extrema_windowed(local_data, mode="min")
+
+        result = []
+        temp_array = []
+        temp_array.extend(peaks_max)
+        temp_array.extend(peaks_min)
+        temp_array.sort()
+        prev_min = False
+        start_step = False
+
+        for i in range(0, len(temp_array)):
+            if not start_step and not prev_min and temp_array[i] in peaks_max:
+                result.append(temp_array[i])
+                prev_min = False
+                start_step = True
+            elif start_step and not prev_min:
+                if temp_array[i] in peaks_min:
+                    if abs(local_data[temp_array[i]] - local_data[result[-1]]) > 15:
+                        result.append(temp_array[i])
+                        prev_min = True
+                    else:
+                        result.pop()
+                        start_step = False
+                elif temp_array[i] < result[-1] and not prev_min:
+                    result.pop()
+                    result.append(temp_array[i])
+            elif start_step and prev_min and temp_array[i] in peaks_max:
+                if result[-1] - temp_array[i] < 10:
+                    result.append(temp_array[i])
+                    start_step = False
+                else:
+                    result.pop()
+                    result.pop()
+                    result.append(temp_array[i])
+                    start_step = True
+                prev_min = False
+        for i in range(0, len(result), 2):
+            self.data_angels_movmean[i] = self.valid_data[i]
+        return result
 
 
 if __name__ == "__main__":

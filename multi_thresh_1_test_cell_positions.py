@@ -1,106 +1,131 @@
 import os
 
-import matplotlib.pyplot as plt
+from fontTools.misc.cython import returns
+from scipy import signal
+from collections import deque
+from statistics import fmean
+
 import numpy as np
+from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
+from statsmodels.sandbox.tsa import movmean
+
+from algoritms import normalize_data
+
+N_join = ['elbow', 'hip', 'knee', 'ankle']
+N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 'SCI_14_dpi', 'SCI_TMT_14_dpi',
+          'SCI_21_dpi',
+          'SCI_TMT_21_dpi', 'SCI_28_dpi', 'SCI_TMT_28_dpi']
+N_meth = ['FA0', 'FA1', 'FA2', 'DFA0', 'DFA1', 'DFA2']
+idx_out = [1, 1, 2, [2, 3], [2, 3], [3, 4], [3, 4], 4]
+S = np.unique(np.concatenate((np.arange(7, 18, 2), np.floor(2 ** np.arange(4.25, 13.25, 0.25)))))
+Ns = len(S)
+TypeColor = np.array([[0, 0.4470, 0.7410], [0.3010, 0.7450, 0.9330], [0.8500, 0.3250, 0.0980], [1, 0, 0]])
+Np = len(N_join)
+H_aver = np.full((1, len(N_join), len(N_cond), len(N_meth) + 6), np.nan)
+R_aver = np.full((1, len(N_join), len(N_cond), len(N_meth), len(S)), np.nan)
+P_aver = np.full((1, len(N_join), len(N_cond), len(N_meth), len(S)), np.nan)
 
 
-def multi_threash(signal):
-    plt.figure(1)
-    plt.clf()
-    ax1 = plt.subplot(1, 1, 1)
-    plt.plot(signal)
-    plt.title('Image Source')
+def moving_average(signal, window_size):
+    return np.convolve(signal, np.ones(window_size) / window_size, mode='same')
 
-    S1 = np.arange(16, 3, -1)[:, np.newaxis] / signal.shape[1]
-    X_grid = [None] * len(S1)
-    var_X_grid = np.full(len(S1), np.nan)
 
-    for m in range(len(S1)):
-        Y1 = np.convolve(np.mean(signal, axis=0), np.ones(S1[m]) / S1[m], mode='same')
-        Y1 = Y1 - np.convolve(Y1, np.ones(S1[m] * 2) / (S1[m] * 2), mode='same')
-        Y1 /= np.std(Y1)
+def local_extrema_windowed(signal, window_size=7, mode='max'):
+    half = window_size // 2
+    extrema_indices = []
 
-        y, x = find_peaks(Y1, distance=S1[m])
-        X_grid[m] = x[(y > 0) & (x > S1[m] / 3) & (x < signal.shape[1] - S1[m] / 3)]
+    for i in range(half, len(signal) - half):
+        window = signal[i - half:i + half + 1]
+        center = signal[i]
 
-        if len(X_grid[m]) > 4:
-            var_X_grid[m] = np.var(np.diff(X_grid[m]))
+        if mode == 'max' and center == np.max(window):
+            extrema_indices.append(i)
+        elif mode == 'min' and center == np.min(window):
+            extrema_indices.append(i)
 
-        im_X = np.nanargmin(var_X_grid)
-        S1 = S1[im_X]
-        X_grid = X_grid[im_X]
+    return extrema_indices
 
-        Y1 = np.convolve(np.mean(signal, axis=0), np.ones(S1) / S1, mode='same')
-        Y1 = Y1 - np.convolve(Y1, np.ones(S1 * 2) / (S1 * 2), mode='same')
-        Y1 /= np.std(Y1)
 
-        ax2 = plt.subplot(1, 1, 1)
-        plt.cla()
-        plt.plot(Y1)
-        plt.axvline(x=X_grid, color='r', linestyle='--')
-        plt.title('Processed Data')
-        plt.hold(True)
+def read_data(cond_dir, fname):
+    """Reads rotation angles and magnitudes, handling potential errors."""
+    try:
+        data = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)  # Assuming CSV with commas
+        magnitudes_fname = fname[:-10] + 'magnitudes.csv'  # Removing the _angles part
+        tbl = np.loadtxt(os.path.join(cond_dir, magnitudes_fname), delimiter=',', dtype=str)  # Assuming CSV with commas
+        return data, tbl
+    except (FileNotFoundError, ValueError) as e:
+        print(f"Error reading {e}")
+        return None, None
 
-        # plt.figure(2)
-        # plt.clf()
-        # ax3 = plt.subplot(1, 1, 1)
-        # plt.plot(signal, aspect='auto')
-        # plt.colorbar()
-        # plt.title('Transposed Image Source')
-        # plt.hold(True)
-        #
-        # S2 = np.arange(16, 3, -1)[:, np.newaxis] / signal.shape[0]
-        #
-        # Y_grid = [None] * len(S2)
-        # var_Y_grid = np.full(len(S2), np.nan)
-        #
-        # for m in range(len(S2)):
-        #     Y2 = np.convolve(np.mean(signal, axis=1), np.ones(S2[m]) / S2[m], mode='same')
-        #     Y2 = Y2 - np.convolve(Y2, np.ones(S2[m] * 2) / (S2[m] * 2), mode='same')
-        #     Y2 /= np.std(Y2)
-        #
-        #     y, x = find_peaks(Y2, distance=S2[m])
-        #     Y_grid[m] = x[(y > 0) & (x > S2[m] / 3) & (x < signal.shape[0] - S2[m] / 3)]
-        #
-        #     if len(Y_grid[m]) > 4:
-        #         var_Y_grid[m] = np.var(np.diff(Y_grid[m]))
-        #
-        # im_Y = np.nanargmin(var_Y_grid)
-        # S2 = S2[im_Y]
-        # Y_grid = Y_grid[im_Y]
-        #
-        # Y2 = np.convolve(np.mean(signal, axis=1), np.ones(S2) / S2, mode='same')
-        # Y2 = Y2 - np.convolve(Y2, np.ones(S2 * 2) / (S2 * 2), mode='same')
-        # Y2 /= np.std(Y2)
 
-        # ax4 = plt.subplot(1, 1, 1)
-        # plt.cla()
-        # plt.plot(Y2)
-        # plt.axvline(x=Y_grid, color='r', linestyle='--')
-        # plt.title('Processed Data Transposed')
-        # plt.hold(True)
-        #
-        # Y_center, X_center = np.meshgrid(Y_grid, X_grid)
+for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an object 0 to N-1
+    cond = cond_idx  # Use consistent variable types for indexing
+    cond_dir = os.path.join('./', N_cond[cond])  # Directory for this condition
+    fdir = os.path.join(cond_dir, '*_angles.csv')  # File for each condition
+    # fdir = str(fdir) #Cast values to string so they are of the same object type
+    fnames = [f for f in os.listdir(cond_dir) if
+              f.endswith('_angles.csv')]  # List all angle filenames from a directory.
 
-        # plt.figure(1)
-        # plt.subplot(1, 1, 1)
-        # plt.plot(X_center.flatten(), Y_center.flatten(), 'r*')
+    for n, fname in enumerate(fnames):
 
-        # plt.figure(2)
-        # plt.subplot(1, 1, 1)
-        # plt.plot(Y_center.flatten(), X_center.flatten(), 'r*')
+        data_init = np.loadtxt(os.path.join("D:\Diplom\DiplomPy\Intact\Intact_1_angles.csv"),
+                               delimiter=',', dtype=str)
+        data = data_init[1:]
+        data = data.astype(np.float64)
+        column_data = data[0:, 3]
+        column_data = np.array(column_data)
+        column_data = column_data.astype(np.float64)
 
-        plt.pause(0.1)
+        valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
+        # plt.plot(valid_data)
 
-data_init = np.loadtxt(os.path.join('Intact',
-                                       'Intact_1_angles.csv'),
-                          delimiter=',', dtype=str)
-data = data_init[1:]
-data = data.astype(np.float64)
-column_data = data[0:, 2]
-column_data = np.array(column_data)
-column_data = column_data.astype(np.float64)
+        valid_data = moving_average(valid_data, 5)
+        plt.plot(valid_data, c="b")
 
-valid_data = column_data[~np.isnan(column_data)]
-multi_threash(valid_data)
+        peaks_max = local_extrema_windowed(valid_data)
+        plt.scatter(peaks_max, valid_data[peaks_max])
+
+        peaks_min = local_extrema_windowed(valid_data, mode="min")
+        plt.scatter(peaks_min, valid_data[peaks_min])
+        result = []
+        temp_array = []
+        temp_array.extend(peaks_max)
+        temp_array.extend(peaks_min)
+        temp_array.sort()
+
+        temp_position_max = 0
+        next_temp_position_max = peaks_max[1]
+        temp_position_min = peaks_min[0]
+        prev_min = False
+        start_step = False
+
+        for i in range(0, len(temp_array)):
+            if not start_step and not prev_min and temp_array[i] in peaks_max:
+                result.append(temp_array[i])
+                prev_min = False
+                start_step = True
+            elif start_step and not prev_min:
+                if temp_array[i] in peaks_min:
+                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > 15:
+                        result.append(temp_array[i])
+                        prev_min = True
+                    else:
+                        result.pop()
+                        start_step = False
+                elif temp_array[i] < result[-1] and not prev_min:
+                    result.pop()
+                    result.append(temp_array[i])
+            elif start_step and prev_min and temp_array[i] in peaks_max:
+                    result.append(temp_array[i])
+
+                    start_step = False
+                    prev_min = False
+
+
+    for i in range(0, len(result) - 2, 3):
+        plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
+
+    plt.xlabel('Lead Time (in days)')
+    plt.ylabel('Proportation of Events Scheduled')
+    plt.show()

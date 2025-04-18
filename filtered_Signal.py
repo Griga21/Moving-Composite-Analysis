@@ -81,12 +81,13 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
         # plt.plot(valid_data)
 
         valid_data = moving_average(valid_data, 5)
-        plt.plot(valid_data, c = "b")
+        plt.plot(valid_data, c="b")
 
         peaks_max = local_extrema_windowed(valid_data)
+        plt.scatter(peaks_max, valid_data[peaks_max])
 
         peaks_min = local_extrema_windowed(valid_data, mode="min")
-
+        plt.scatter(peaks_min, valid_data[peaks_min])
         result = []
         temp_array = []
         temp_array.extend(peaks_max)
@@ -99,22 +100,33 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
         prev_min = False
         start_step = False
 
-        for i in range(1, len(temp_array)):
+        for i in range(0, len(temp_array)):
             if not start_step and not prev_min and temp_array[i] in peaks_max:
                 result.append(temp_array[i])
+                prev_min = False
                 start_step = True
             elif start_step and not prev_min:
                 if temp_array[i] in peaks_min:
-                    result.append(temp_array[i])
-                    prev_min = True
+                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > 15:
+                        result.append(temp_array[i])
+                        prev_min = True
+                    else:
+                        result.pop()
+                        start_step = False
                 elif temp_array[i] < result[-1] and not prev_min:
                     result.pop()
                     result.append(temp_array[i])
-            elif start_step and  prev_min and temp_array[i] in peaks_max:
-                result.append(temp_array[i])
-                start_step = False
+            elif start_step and prev_min and temp_array[i] in peaks_max:
+                print(abs(valid_data[temp_array[i]] - valid_data[result[-2]]))
+                if result[-1] - temp_array[i] < 10:
+                    result.append(temp_array[i])
+                    start_step = False
+                else:
+                    result.pop()
+                    result.pop()
+                    result.append(temp_array[i])
+                    start_step = True
                 prev_min = False
-
 
     for i in range(0, len(result) - 2, 3):
         plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
