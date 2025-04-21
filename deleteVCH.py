@@ -22,6 +22,7 @@ class ImageGraphApp(QMainWindow):
         self.setGeometry(400, 50, 200, 200)
         self.image_index = 0
 
+
         self.video_loaded = False
         self.csv_data = pd.DataFrame()  # дата с траетория движния всех суставов
         self.coordinates = {}  # координаты с траетория движния всех суставов
