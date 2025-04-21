@@ -69,7 +69,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
 
     for n, fname in enumerate(fnames):
 
-        data_init = np.loadtxt(os.path.join("D:\Diplom\DiplomPy\Intact\Intact_1_angles.csv"),
+        data_init = np.loadtxt(os.path.join("/data/Intact\Intact_1_angles.csv"),
                                delimiter=',', dtype=str)
         data = data_init[1:]
         data = data.astype(np.float64)
