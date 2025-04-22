@@ -193,7 +193,7 @@ class VideoPlayerSlider(QMainWindow):
                 print("Detected Coordinates Pairs:", self.coordinates)
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
-        data_init = np.loadtxt(os.path.join('Intact',
+        data_init = np.loadtxt(os.path.join('data/Intact',
                                        'Intact_1_angles.csv'),
                           delimiter=',', dtype=str)
         data = data_init[1:]
