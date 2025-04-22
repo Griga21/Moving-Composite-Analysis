@@ -61,7 +61,7 @@ def read_data(cond_dir, fname):
 
 for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an object 0 to N-1
     cond = cond_idx  # Use consistent variable types for indexing
-    cond_dir = os.path.join('./', N_cond[cond])  # Directory for this condition
+    cond_dir = os.path.join('./data/', N_cond[cond])  # Directory for this condition
     fdir = os.path.join(cond_dir, '*_angles.csv')  # File for each condition
     # fdir = str(fdir) #Cast values to string so they are of the same object type
     fnames = [f for f in os.listdir(cond_dir) if
@@ -69,7 +69,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
 
     for n, fname in enumerate(fnames):
 
-        data_init = np.loadtxt(os.path.join("D:\Diplom\DiplomPy\Intact\Intact_1_angles.csv"),
+        data_init = np.loadtxt(os.path.join("D:\Diplom\DiplomPy\data\Intact\Intact_3_angles.csv"),
                                delimiter=',', dtype=str)
         data = data_init[1:]
         data = data.astype(np.float64)
@@ -78,7 +78,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
         column_data = column_data.astype(np.float64)
 
         valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-        # plt.plot(valid_data)
+        #plt.plot(valid_data)
 
         valid_data = moving_average(valid_data, 5)
         plt.plot(valid_data, c="b")
@@ -88,6 +88,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
 
         peaks_min = local_extrema_windowed(valid_data, mode="min")
         plt.scatter(peaks_min, valid_data[peaks_min])
+
         result = []
         temp_array = []
         temp_array.extend(peaks_max)
@@ -107,7 +108,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
                 start_step = True
             elif start_step and not prev_min:
                 if temp_array[i] in peaks_min:
-                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > 15:
+                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > 9:
                         result.append(temp_array[i])
                         prev_min = True
                     else:
