@@ -1,15 +1,16 @@
 import os
-import sys
 
 import cv2
 import numpy as np
 import pandas as pd
 from PyQt5.QtCore import Qt, pyqtSlot, QCoreApplication
-from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
-    QMessageBox, QMainWindow, QComboBox, QListWidget, QSpinBox
+    QMessageBox, QSpinBox
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
+from stepanalyzer.algorithms.algorithm_for_steps import count_steps
+from stepanalyzer.image_processing.image_processor import show_frame
 
 
 def moving_average(signal, window_size):
@@ -19,8 +20,6 @@ def moving_average(signal, window_size):
 class Main_Widget(QWidget):
     def __init__(self):
         super().__init__()
-
-        self.image_index = 0
 
         self.video_loaded = False
         self.csv_data = pd.DataFrame()  # дата с траетория движния всех суставов
@@ -89,7 +88,7 @@ class Main_Widget(QWidget):
     def setup_UI_widget(self):
         self.image_label.setFixedSize(900, 900)
 
-        self.spinbox_step.setValue(10)
+        self.spinbox_step.setValue(15)
         self.spinbox_angle.setValue(15)
         self._change_frame_slider.setEnabled(False)
         self._change_frame_slider.sliderMoved.connect(self.slider_changed)
@@ -104,36 +103,46 @@ class Main_Widget(QWidget):
         self.back_button.clicked.connect(self.slider_changed_by_button_back)
         self.apply_update_button.clicked.connect(self.update_params)
 
-        figure_layout = QHBoxLayout()
-        figure_layout.addWidget(self.image_label)
-        figure_layout.addWidget(self.canvas)
+        image_layout = QHBoxLayout()
+        image_layout.addWidget(self.image_label)
+        image_layout.addWidget(self.canvas)
 
-        buttons_layout = QHBoxLayout()
-        buttons_layout.addWidget(self.back_button)
-        buttons_layout.addWidget(self.next_button)
+        main_utils_layout = QHBoxLayout()
+        buttons_layout_for_video = QVBoxLayout()
+        buttons_layout_for_change_frame = QHBoxLayout()
+        buttons_layout_for_open_close_frame = QHBoxLayout()
 
-        buttons_video_layout = QHBoxLayout()
-        buttons_video_layout.addWidget(self.open_video_button)
-        buttons_video_layout.addWidget(self.open_csv_trajectory_button)
-        buttons_video_layout.addWidget(self.open_csv_button)
+        buttons_layout_for_change_frame.addWidget(self.back_button)
+        buttons_layout_for_change_frame.addWidget(self.next_button)
 
-        spinbox_layout = QHBoxLayout()
+        buttons_layout_for_open_close_frame.addWidget(self.open_video_button)
+        buttons_layout_for_open_close_frame.addWidget(self.open_csv_trajectory_button)
+        buttons_layout_for_open_close_frame.addWidget(self.open_csv_button)
 
-        spinbox_layout.addWidget(self.label_step_distance)
-        spinbox_layout.addWidget(self.spinbox_step)
-        spinbox_layout.addWidget(self.label_angle_distance)
-        spinbox_layout.addWidget(self.spinbox_angle)
-        spinbox_layout.addWidget(self.apply_update_button)
+        buttons_layout_for_video.addLayout(buttons_layout_for_change_frame)
+        buttons_layout_for_video.addWidget(self.label_count_frame)
+        buttons_layout_for_video.addWidget(self._change_frame_slider)
 
-        slider_layout = QVBoxLayout()
-        slider_layout.addLayout(figure_layout)
-        slider_layout.addLayout(buttons_layout)
-        slider_layout.addLayout(buttons_video_layout)
-        slider_layout.addWidget(self.label_count_frame)
-        slider_layout.addWidget(self._change_frame_slider)
-        slider_layout.addLayout(spinbox_layout)
+        main_buttons_for_change_params = QVBoxLayout()
+        buttons_for_change_params = QHBoxLayout()
 
-        self.main_layout.addLayout(slider_layout)
+        buttons_for_change_params.addWidget(self.label_step_distance)
+        buttons_for_change_params.addWidget(self.spinbox_step)
+        buttons_for_change_params.addWidget(self.label_angle_distance)
+        buttons_for_change_params.addWidget(self.spinbox_angle)
+        buttons_for_change_params.addWidget(self.apply_update_button)
+        main_buttons_for_change_params.addLayout(buttons_layout_for_open_close_frame)
+        main_buttons_for_change_params.addLayout(buttons_for_change_params)
+
+        main_utils_layout.addLayout(buttons_layout_for_video, 1)
+        main_utils_layout.addLayout(main_buttons_for_change_params, 1)
+
+        # Union up and down layout
+        main_widget_layout = QVBoxLayout()
+        main_widget_layout.addLayout(image_layout, 1)
+        main_widget_layout.addLayout(main_utils_layout, 1)
+
+        self.main_layout.addLayout(main_widget_layout)
 
         self.label_count_frame.setText('Number Frame')
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
@@ -156,13 +165,14 @@ class Main_Widget(QWidget):
     def update_params(self):
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
         self.label_angle_distance.setText(f'Angle Distance {self.spinbox_angle.value()}')
-        # self.data_angels_movmean[:-1]
-        # self.data_angels_movmean.append(self.count_steps(self.valid_data))
+        self.data_angels_movmean.pop()
+        self.data_angels_movmean.append(count_steps(self, self.valid_data))
+        self.ax.clear()
+        self.update_content(self._change_frame_slider.value())
 
     def update_content(self, position):
         # Обновляем график
         self.ax.clear()
-        point = 0
         if position < 60:
             x = np.linspace(0, 120, 120)
             y = self.valid_data[0:120]
@@ -206,7 +216,7 @@ class Main_Widget(QWidget):
                 self.video_width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                 self.video_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-                self.show_frame(0)
+                show_frame(self, 0)
 
                 self.ax.clear()
                 self.canvas.draw()
@@ -237,7 +247,7 @@ class Main_Widget(QWidget):
                     # Remove NaN values for calculation
                     self.valid_data = moving_average(self.valid_data, 5)
                     self.data_angels.append(self.valid_data)
-                    self.data_angels_movmean.append(self.count_steps(self.valid_data))
+                    self.data_angels_movmean.append(count_steps(self, self.valid_data))
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
 
@@ -269,75 +279,11 @@ class Main_Widget(QWidget):
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
 
-    def show_frame(self, frame_number):
-        try:
-            # Set the frame position in the video and read it
-            self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-            success, frame = self.video_cap.read()
-
-            if success:
-                # Overlay the frame number in the upper right corner
-                text = f"Frame: {frame_number}"
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 1
-                color = (255, 255, 255)  # White text
-                thickness = 2
-                text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
-                text_x = self.video_width - text_size[0] - 10  # 10 pixels from the right edge
-                text_y = 30  # 30 pixels from the top
-                cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness, cv2.LINE_AA)
-
-                # If CSV data is available, plot the dots and connect them
-                if not self.csv_data.empty and frame_number in self.csv_data['coords'].values:
-                    row_data = self.csv_data[self.csv_data['coords'] == frame_number]
-
-                    # List of points to connect with lines (order: crest -> hip -> knee -> ankle -> mtp -> toe)
-                    key_points = ['iliaccrest', 'hip', 'knee', 'ankle', 'mtp', 'toe']
-                    points = []
-
-                    for index, (label, (x_col, y_col)) in enumerate(self.coordinates.items()):
-                        if label in key_points:
-                            x = int(float(str(row_data[x_col].values[0]).replace(u'\xa0', u'')))
-                            y = int(float(str(row_data[y_col].values[0]).replace(u'\xa0', u'')))
-                            points.append((x, y))  # Add the point to the list
-
-                            # Draw the dot (adjust for OpenCV's coordinate system)
-                            color = self.colors[index % len(self.colors)]
-                            cv2.circle(frame, (x, y), 10, color, -1)
-
-                            # Draw the label text next to the dot
-                            label_x = x + 10  # Offset the label slightly
-                            label_y = y - 10
-                            cv2.putText(frame, label, (label_x, label_y), font, 0.7, color, 2)
-
-                    # Connect the points with lines
-                    for i in range(len(points) - 1):
-                        start_point = points[i]
-                        end_point = points[i + 1]
-                        cv2.line(frame, start_point, end_point, (0, 255, 255), 2)  # Yellow line with thickness 2
-
-                scale_percent = 45
-                width = int(frame.shape[1] * scale_percent / 100)
-                height = int(frame.shape[0] * scale_percent / 100)
-                dim = (width, height)
-                frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-
-                # Convert the frame to QImage format and display it
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                height, width, channel = frame.shape
-                bytes_per_line = 3 * width
-                qimg = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
-                self.image_label.setPixmap(QPixmap.fromImage(qimg))
-
-
-        except Exception as e:
-            self.show_error_message(f"Error showing frame: {e}")
-
     def slider_changed(self, position):
         try:
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
-                self.show_frame(position)
+                show_frame(self, position)
                 if self.combo_index != 4:
                     self.update_content(position)
                 else:
@@ -351,7 +297,7 @@ class Main_Widget(QWidget):
         try:
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
-                self.show_frame(position)
+                show_frame(self, position)
                 if self.combo_index != 4:
                     self.update_content(position)
                 else:
@@ -365,7 +311,7 @@ class Main_Widget(QWidget):
         try:
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
-                self.show_frame(position)
+                show_frame(self, position)
                 if self.combo_index != 4:
                     self.update_content(position)
                 else:
@@ -379,7 +325,7 @@ class Main_Widget(QWidget):
             new_value = self._change_frame_slider.value() + 1
             if new_value <= self.max_frame:
                 self._change_frame_slider.setValue(new_value)
-                self.show_frame(new_value)
+                show_frame(self, new_value)
                 if self.combo_index != 4:
                     self.update_content(new_value)
                 else:
@@ -388,7 +334,7 @@ class Main_Widget(QWidget):
             new_value = self._change_frame_slider.value() - 1
             if new_value >= self.min_frame:
                 self._change_frame_slider.setValue(new_value)
-                self.show_frame(new_value)
+                show_frame(self, new_value)
                 if self.combo_index != 4:
                     self.update_content(new_value)
                 else:
@@ -407,67 +353,6 @@ class Main_Widget(QWidget):
         if self.video_cap:
             self.video_cap.release()
         event.accept()
-
-    def local_extrema_windowed(self, signal, window_size=7, mode='max'):
-        half = window_size // 2
-        extrema_indices = []
-
-        for i in range(half, len(signal) - half):
-            window = signal[i - half:i + half + 1]
-            center = signal[i]
-
-            if mode == 'max' and center == np.max(window):
-                extrema_indices.append(i)
-            elif mode == 'min' and center == np.min(window):
-                extrema_indices.append(i)
-
-        return extrema_indices
-
-    def count_steps(self, local_data):
-        peaks_max = self.local_extrema_windowed(local_data)
-
-        peaks_min = self.local_extrema_windowed(local_data, mode="min")
-
-        result = []
-        temp_array = []
-        temp_array.extend(peaks_max)
-        temp_array.extend(peaks_min)
-        temp_array.sort()
-        prev_min = False
-        start_step = False
-
-        for i in range(0, len(temp_array)):
-            if not start_step and not prev_min and temp_array[i] in peaks_max:
-                result.append(temp_array[i])
-                prev_min = False
-                start_step = True
-            elif start_step and not prev_min:
-                if temp_array[i] in peaks_min:
-                    if abs(local_data[temp_array[i]] - local_data[result[-1]]) > self.spinbox_angle.value():
-                        result.append(temp_array[i])
-                        prev_min = True
-                    else:
-                        result.pop()
-                        start_step = False
-                elif temp_array[i] < result[-1] and not prev_min:
-                    result.pop()
-                    result.append(temp_array[i])
-            elif start_step and prev_min and temp_array[i] in peaks_max:
-                if result[-1] - temp_array[i] < self.spinbox_step.value():
-                    result.append(temp_array[i])
-                    start_step = False
-                else:
-                    result.pop()
-                    result.pop()
-                    result.append(temp_array[i])
-                    start_step = True
-                prev_min = False
-
-        temp_result = np.zeros(len(self.valid_data))
-        for i in range(0, len(result) - 2, 3):
-            for j in range(result[i], result[i + 2]):
-                temp_result[j] = self.valid_data[result[i]]
-        return temp_result
 
     @pyqtSlot()
     def exit_clicked(self):

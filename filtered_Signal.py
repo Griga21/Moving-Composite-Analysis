@@ -58,8 +58,18 @@ def read_data(cond_dir, fname):
         print(f"Error reading {e}")
         return None, None
 
+total_count_steps = []
+total_time_steps = []
+total_angels = []
 
-for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an object 0 to N-1
+temp_total_count_steps = []
+temp_total_time_steps = []
+temp_total_angels = []
+
+params = {}
+
+
+for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object 0 to N-1
     cond = cond_idx  # Use consistent variable types for indexing
     cond_dir = os.path.join('./data/', N_cond[cond])  # Directory for this condition
     fdir = os.path.join(cond_dir, '*_angles.csv')  # File for each condition
@@ -67,10 +77,10 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
     fnames = [f for f in os.listdir(cond_dir) if
               f.endswith('_angles.csv')]  # List all angle filenames from a directory.
 
+
     for n, fname in enumerate(fnames):
 
-        data_init = np.loadtxt(os.path.join("D:\Diplom\DiplomPy\data\Intact\Intact_3_angles.csv"),
-                               delimiter=',', dtype=str)
+        data_init = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)
         data = data_init[1:]
         data = data.astype(np.float64)
         column_data = data[0:, 3]
@@ -78,7 +88,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
         column_data = column_data.astype(np.float64)
 
         valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-        #plt.plot(valid_data)
+        # plt.plot(valid_data)
 
         valid_data = moving_average(valid_data, 5)
         plt.plot(valid_data, c="b")
@@ -108,7 +118,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
                 start_step = True
             elif start_step and not prev_min:
                 if temp_array[i] in peaks_min:
-                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > 9:
+                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > 15:
                         result.append(temp_array[i])
                         prev_min = True
                     else:
@@ -118,8 +128,7 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
                     result.pop()
                     result.append(temp_array[i])
             elif start_step and prev_min and temp_array[i] in peaks_max:
-                print(abs(valid_data[temp_array[i]] - valid_data[result[-2]]))
-                if result[-1] - temp_array[i] < 10:
+                if temp_array[i] - result[-1] < 15:
                     result.append(temp_array[i])
                     start_step = False
                 else:
@@ -129,9 +138,22 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
                     start_step = True
                 prev_min = False
 
-    for i in range(0, len(result) - 2, 3):
-        plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
+        for i in range(0, len(result) - 2, 3):
+            #plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
+            temp_total_time_steps.append(result[i + 2] - result[i])
+            temp_total_angels.append(abs(valid_data[result[i]] - valid_data[result[i + 1]]))
+            total_angels.append(abs(valid_data[result[i + 1]] - valid_data[result[i + 2]]))
+    total_time_steps.append(temp_total_time_steps)
+    temp_total_time_steps = []
+    total_angels.append(temp_total_angels)
+    temp_total_angels = []
 
-    plt.xlabel('Lead Time (in days)')
-    plt.ylabel('Proportation of Events Scheduled')
+    fig, ax = plt.subplots()
+    ax.set_ylabel('fruit weight (g)')
+
+    bplot = ax.boxplot(total_time_steps,
+                   patch_artist=True,  # fill with color
+                   )
     plt.show()
+
+

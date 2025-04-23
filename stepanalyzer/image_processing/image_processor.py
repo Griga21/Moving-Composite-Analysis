@@ -1,5 +1,5 @@
 import cv2
-from PIL.ImageQt import QImage, QPixmap
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QFileDialog
 
 
