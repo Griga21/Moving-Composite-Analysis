@@ -31,7 +31,7 @@ def moving_average(signal, window_size):
     return np.convolve(signal, np.ones(window_size) / window_size, mode='same')
 
 
-def local_extrema_windowed(signal, window_size=7, mode='max'):
+def local_extrema_windowed(signal, window_size=15, mode='max'):
     half = window_size // 2
     extrema_indices = []
 
@@ -66,6 +66,8 @@ temp_total_count_steps = []
 temp_total_time_steps = []
 temp_total_angels = []
 
+
+
 params = {}
 
 
@@ -80,7 +82,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
 
     for n, fname in enumerate(fnames):
 
-        data_init = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)
+        data_init = np.loadtxt("D:\Diplom\DiplomPy\data\SCI_14_dpi\SCI_14_dpi_1_angles.csv", delimiter=',', dtype=str)
         data = data_init[1:]
         data = data.astype(np.float64)
         column_data = data[0:, 3]
@@ -90,7 +92,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
         valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
         # plt.plot(valid_data)
 
-        valid_data = moving_average(valid_data, 5)
+        #valid_data = moving_average(valid_data, 7)
         plt.plot(valid_data, c="b")
 
         peaks_max = local_extrema_windowed(valid_data)

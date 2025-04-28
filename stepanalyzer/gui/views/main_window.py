@@ -28,8 +28,8 @@ class Main_GUI(QMainWindow):
 
         container = Main_Widget()
         self.setCentralWidget(container)
-        self.setFocusPolicy(Qt.StrongFocus)
-        self.setFocus()
+        #self.setFocusPolicy(Qt.StrongFocus)
+        #self.setFocus()
 
         #Menu Bar
         self._menu_bar = self.menuBar()

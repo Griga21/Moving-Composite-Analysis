@@ -47,7 +47,7 @@ def count_steps(self, local_data):
                 result.pop()
                 result.append(temp_array[i])
         elif start_step and prev_min and temp_array[i] in peaks_max:
-            if temp_array[i] - result[-1]  < self.spinbox_step.value():
+            if temp_array[i] - result[-1] < self.spinbox_step.value():
                 result.append(temp_array[i])
                 start_step = False
             else:
@@ -59,6 +59,6 @@ def count_steps(self, local_data):
 
     temp_result = np.zeros(len(self.valid_data))
     for i in range(0, len(result) - 2, 3):
-        for j in range(result[i], result[i + 2]):
+        for j in range(result[i], result[i + 2] + 1):
             temp_result[j] = self.valid_data[result[i]]
     return temp_result

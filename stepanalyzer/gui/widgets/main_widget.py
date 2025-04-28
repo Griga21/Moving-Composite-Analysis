@@ -83,6 +83,8 @@ class Main_Widget(QWidget):
 
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocus()
         self.setup_UI_widget()
 
     def setup_UI_widget(self):
