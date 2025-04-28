@@ -65,11 +65,17 @@ total_angels = []
 temp_total_count_steps = []
 temp_total_time_steps = []
 temp_total_angels = []
+bar_colors = ['olive','red',  'red', 'blue',
+              'blue','orange', 'orange',
+              'green','green','purple',
+              'purple']
 
 
 
-params = {}
 
+params = {'Intact':[15, 20, 7], 'SCI_3_dpi':[30, 7, 20], 'SCI_TMT_3_dpi':[30, 7, 20], 'SCI_7_dpi':[30, 10, 20], 'SCI_TMT_7_dpi':[30, 10, 20],
+          'SCI_14_dpi':[30, 20, 7], 'SCI_TMT_14_dpi':[30, 20, 7], 'SCI_21_dpi':[30, 20, 7], 'SCI_TMT_21_dpi':[30, 15, 7], 'SCI_28_dpi':[50, 20, 7],
+          'SCI_TMT_28_dpi':[50, 20, 7]}
 
 for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object 0 to N-1
     cond = cond_idx  # Use consistent variable types for indexing
@@ -82,7 +88,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
 
     for n, fname in enumerate(fnames):
 
-        data_init = np.loadtxt("D:\Diplom\DiplomPy\data\SCI_14_dpi\SCI_14_dpi_1_angles.csv", delimiter=',', dtype=str)
+        data_init = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)
         data = data_init[1:]
         data = data.astype(np.float64)
         column_data = data[0:, 3]
@@ -92,14 +98,14 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
         valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
         # plt.plot(valid_data)
 
-        #valid_data = moving_average(valid_data, 7)
-        plt.plot(valid_data, c="b")
+        valid_data = moving_average(valid_data, params[N_cond[cond]][2])
+        #plt.plot(valid_data, c="b")
 
         peaks_max = local_extrema_windowed(valid_data)
-        plt.scatter(peaks_max, valid_data[peaks_max])
+        #plt.scatter(peaks_max, valid_data[peaks_max])
 
         peaks_min = local_extrema_windowed(valid_data, mode="min")
-        plt.scatter(peaks_min, valid_data[peaks_min])
+        #plt.scatter(peaks_min, valid_data[peaks_min])
 
         result = []
         temp_array = []
@@ -120,7 +126,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
                 start_step = True
             elif start_step and not prev_min:
                 if temp_array[i] in peaks_min:
-                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > 15:
+                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > params[N_cond[cond]][1]:
                         result.append(temp_array[i])
                         prev_min = True
                     else:
@@ -130,7 +136,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
                     result.pop()
                     result.append(temp_array[i])
             elif start_step and prev_min and temp_array[i] in peaks_max:
-                if temp_array[i] - result[-1] < 15:
+                if temp_array[i] - result[-1] < params[N_cond[cond]][0]:
                     result.append(temp_array[i])
                     start_step = False
                 else:
@@ -140,22 +146,38 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
                     start_step = True
                 prev_min = False
 
+
         for i in range(0, len(result) - 2, 3):
             #plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
             temp_total_time_steps.append(result[i + 2] - result[i])
             temp_total_angels.append(abs(valid_data[result[i]] - valid_data[result[i + 1]]))
-            total_angels.append(abs(valid_data[result[i + 1]] - valid_data[result[i + 2]]))
+            temp_total_angels.append(abs(valid_data[result[i + 1]] - valid_data[result[i + 2]]))
+    total_count_steps.append(len(temp_total_angels) / 2)
+    temp_total_count_steps = []
     total_time_steps.append(temp_total_time_steps)
     temp_total_time_steps = []
     total_angels.append(temp_total_angels)
     temp_total_angels = []
 
-    fig, ax = plt.subplots()
-    ax.set_ylabel('fruit weight (g)')
+fig1, ax = plt.subplots()
+ax.set_ylabel('Total time step')
 
-    bplot = ax.boxplot(total_time_steps,
-                   patch_artist=True,  # fill with color
+bplot = ax.boxplot(total_time_steps,
+                   patch_artist=True, tick_labels=N_cond
                    )
-    plt.show()
+
+fig2, ax = plt.subplots()
+ax.set_ylabel('total_angels')
+
+bplot = ax.boxplot(total_angels,
+                   patch_artist=True, tick_labels=N_cond
+                   )
+
+fig3, ax = plt.subplots()
+ax.set_ylabel('total_count_step')
+bplot = ax.bar(N_cond,total_count_steps, color= bar_colors
+                   )
+plt.show()
+
 
 
