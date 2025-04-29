@@ -38,7 +38,7 @@ def analog_result(X_raw, titel):
     axes[1, 1].set_title('spector')
     axes[1, 1].legend()
 
-    # X_raw[p] = correlate(X_raw[p], X_raw[p])
+    X_raw = correlate(X_raw, X_raw)
 
     axes[2, 0].plot(X_raw, label="spector")
     axes[2, 0].set_title('acorr2')

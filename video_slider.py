@@ -1,11 +1,6 @@
-import os
 import sys
-
 import cv2
-import numpy as np
 import pandas as pd
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -20,10 +15,11 @@ from PyQt5.QtWidgets import (
     QSpinBox,
     QMessageBox,
 )
-from matplotlib import pyplot as plt
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QImage, QPixmap
 
 
-class VideoPlayerSlider(QMainWindow):
+class VideoPlayer(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Video Frame Viewer")
@@ -172,14 +168,7 @@ class VideoPlayerSlider(QMainWindow):
             )
             if csv_file:
                 # Load CSV with pandas
-                temp_list = []
-                for i in range(19, 39):
-                    if i % 3 == 0:
-                        continue
-                    temp_list.append(i)
-                temp_list.append(0)
-                temp_list.sort()
-                self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
+                self.csv_data = pd.read_csv(csv_file)
 
                 # Parse columns and identify pairs of x, y coordinates
                 self.coordinates = {}
@@ -193,20 +182,6 @@ class VideoPlayerSlider(QMainWindow):
                 print("Detected Coordinates Pairs:", self.coordinates)
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
-        data_init = np.loadtxt(os.path.join('data/Intact',
-                                       'Intact_1_angles.csv'),
-                          delimiter=',', dtype=str)
-        data = data_init[1:]
-        data = data.astype(np.float64)
-        column_data = data[0:, 2]
-        column_data = np.array(column_data)
-        column_data = column_data.astype(np.float64)
-
-        valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-        plt.ion()
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        line1, = ax.plot(valid_data, 'b-')
 
     def set_frame_range(self):
         try:
@@ -241,7 +216,6 @@ class VideoPlayerSlider(QMainWindow):
             # Set the frame position in the video and read it
             self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             success, frame = self.video_cap.read()
-            # frame = frame[200:900, 500:1920]
 
             if success:
                 # Overlay the frame number in the upper right corner
@@ -260,7 +234,7 @@ class VideoPlayerSlider(QMainWindow):
                     row_data = self.csv_data[self.csv_data['frame'] == frame_number]
 
                     # List of points to connect with lines (order: crest -> hip -> knee -> ankle -> mtp -> toe)
-                    key_points = ['iliaccrest', 'hip', 'knee', 'ankle', 'mtp', 'toe']
+                    key_points = ['iliac crest', 'hip', 'knee', 'ankle', 'mtp', 'toe']
                     points = []
 
                     for index, (label, (x_col, y_col)) in enumerate(self.coordinates.items()):
@@ -324,6 +298,6 @@ class VideoPlayerSlider(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    player = VideoPlayerSlider()
+    player = VideoPlayer()
     player.show()
     sys.exit(app.exec_())
