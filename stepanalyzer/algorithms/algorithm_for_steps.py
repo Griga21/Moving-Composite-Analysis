@@ -47,7 +47,7 @@ def count_steps(self, local_data):
                 result.pop()
                 result.append(temp_array[i])
         elif start_step and prev_min and temp_array[i] in peaks_max:
-            if temp_array[i] - result[-1] < self.spinbox_step.value():
+            if temp_array[i] - result[-2] < self.spinbox_step.value():
                 result.append(temp_array[i])
                 start_step = False
             else:
