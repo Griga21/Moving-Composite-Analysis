@@ -152,7 +152,8 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
             temp_total_time_steps.append(result[i + 2] - result[i])
             temp_total_angels.append(abs(valid_data[result[i]] - valid_data[result[i + 1]]))
             temp_total_angels.append(abs(valid_data[result[i + 1]] - valid_data[result[i + 2]]))
-    total_count_steps.append(len(temp_total_angels) / 2)
+        temp_total_count_steps.append(len(temp_total_angels) / 2)
+    total_count_steps.append(temp_total_count_steps)
     temp_total_count_steps = []
     total_time_steps.append(temp_total_time_steps)
     temp_total_time_steps = []
@@ -175,8 +176,13 @@ bplot = ax.boxplot(total_angels,
 
 fig3, ax = plt.subplots()
 ax.set_ylabel('total_count_step')
-bplot = ax.bar(N_cond,total_count_steps, color= bar_colors
-                   )
+weight_counts = {
+    "Below": np.array([70, 31, 58]),
+    "Above": np.array([82, 37, 66]),
+}
+bplot =  p = ax.bar(['Intact', 'SCI_3_dpi', 'SCI_7_dpi',  'SCI_14_dpi',
+          'SCI_21_dpi','SCI_28_dpi',], weight_count, 0.5, label=boolean, bottom=bottom)
+
 plt.show()
 
 

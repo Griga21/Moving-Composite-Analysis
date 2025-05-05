@@ -31,8 +31,6 @@ class Main_Widget(QWidget):
         self.min_frame = 0
         self.max_frame = 0
         self.total_frames = 0
-        self.combo_index = 0
-        self.combo_text = "elbow_collarbone_paw"
 
         # Define colors for the dots (RGB format)
         self.colors = [
@@ -150,19 +148,6 @@ class Main_Widget(QWidget):
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
         self.label_angle_distance.setText(f'Angle Distance {self.spinbox_step.value()}')
 
-    def text_changed(self, s):
-        self.combo_text = s
-        self.update_content(self._change_frame_slider.value())
-
-    def index_changed(self, index):
-        self.combo_index = index
-        self.figure.clear()
-        self.ax = self.figure.add_subplot(111)
-
-        column_data = self.data_angels[self.combo_index]
-        column_data = np.array(column_data)
-        column_data = column_data.astype(np.float64)
-        self.valid_data = column_data[~np.isnan(column_data)]
 
     def update_params(self):
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
@@ -190,7 +175,7 @@ class Main_Widget(QWidget):
 
         self.ax.plot(x, y)
         self.ax.plot(x1, y1)
-        self.ax.set_title(f"График {self.combo_text}")
+        self.ax.set_title(f"График elbow_collarbone_paw")
         self.ax.axvline(position, -200, 200, c="red", linestyle="--")
         self.canvas.draw()
 
@@ -223,6 +208,8 @@ class Main_Widget(QWidget):
                 self.ax.clear()
                 self.canvas.draw()
                 self.valid_data = []
+                self.data_angels = []
+                self.data_angels_movmean = []
 
         except Exception as e:
             self.show_error_message(f"Error loading video: {e}")
@@ -286,10 +273,7 @@ class Main_Widget(QWidget):
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 show_frame(self, position)
-                if self.combo_index != 4:
-                    self.update_content(position)
-                else:
-                    self.build_three_plots(position)
+                self.update_content(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
@@ -300,10 +284,7 @@ class Main_Widget(QWidget):
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 show_frame(self, position)
-                if self.combo_index != 4:
-                    self.update_content(position)
-                else:
-                    self.build_three_plots(position)
+                self.update_content(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
@@ -314,10 +295,7 @@ class Main_Widget(QWidget):
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 show_frame(self, position)
-                if self.combo_index != 4:
-                    self.update_content(position)
-                else:
-                    self.build_three_plots(position)
+                self.update_content(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
@@ -328,19 +306,13 @@ class Main_Widget(QWidget):
             if new_value <= self.max_frame:
                 self._change_frame_slider.setValue(new_value)
                 show_frame(self, new_value)
-                if self.combo_index != 4:
-                    self.update_content(new_value)
-                else:
-                    self.build_three_plots(new_value)
+                self.update_content(new_value)
         elif event.key() == Qt.Key_Left:  # Left arrow key
             new_value = self._change_frame_slider.value() - 1
             if new_value >= self.min_frame:
                 self._change_frame_slider.setValue(new_value)
                 show_frame(self, new_value)
-                if self.combo_index != 4:
-                    self.update_content(new_value)
-                else:
-                    self.build_three_plots(new_value)
+                self.update_content(new_value)
         else:
             super().keyPressEvent(event)
 
