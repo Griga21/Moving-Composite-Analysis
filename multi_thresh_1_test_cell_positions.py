@@ -1,16 +1,7 @@
 import os
 
-from fontTools.misc.cython import returns
-from scipy import signal
-from collections import deque
-from statistics import fmean
-
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.signal import find_peaks
-from statsmodels.sandbox.tsa import movmean
-
-from algoritms import normalize_data
 
 N_join = ['elbow', 'hip', 'knee', 'ankle']
 N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 'SCI_14_dpi', 'SCI_TMT_14_dpi',
@@ -117,11 +108,10 @@ for cond_idx in range(10, len(N_cond)):  # Loop through the elements of an objec
                     result.pop()
                     result.append(temp_array[i])
             elif start_step and prev_min and temp_array[i] in peaks_max:
-                    result.append(temp_array[i])
+                result.append(temp_array[i])
 
-                    start_step = False
-                    prev_min = False
-
+                start_step = False
+                prev_min = False
 
     for i in range(0, len(result) - 2, 3):
         plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")

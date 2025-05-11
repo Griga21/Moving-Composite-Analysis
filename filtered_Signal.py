@@ -180,8 +180,7 @@ weight_counts = {
     "Below": np.array([70, 31, 58]),
     "Above": np.array([82, 37, 66]),
 }
-bplot =  p = ax.bar(['Intact', 'SCI_3_dpi', 'SCI_7_dpi',  'SCI_14_dpi',
-          'SCI_21_dpi','SCI_28_dpi',], weight_count, 0.5, label=boolean, bottom=bottom)
+
 
 plt.show()
 

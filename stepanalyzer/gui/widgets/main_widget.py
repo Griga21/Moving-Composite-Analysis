@@ -1,4 +1,5 @@
 import os
+from ast import Index
 
 import cv2
 import numpy as np
@@ -8,6 +9,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLay
     QMessageBox, QSpinBox
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from pandas import Series
 
 from stepanalyzer.algorithms.algorithm_for_steps import count_steps
 from stepanalyzer.image_processing.image_processor import show_frame
@@ -21,16 +23,21 @@ class Main_Widget(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.name_video = None
+        self.file_name_video = None
         self.video_loaded = False
         self.csv_data = pd.DataFrame()  # дата с траетория движния всех суставов
         self.coordinates = {}  # координаты с траетория движния всех суставов
         self.data_angels = []  # многомерный массив со всеми данными углов
         self.data_angels_movmean = []  # array with step marks
+        self.result_csv_data = []
+        self.temp_result_data = []
         self.video_cap = None
         self.current_frame = 0
         self.min_frame = 0
         self.max_frame = 0
         self.total_frames = 0
+        self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance', 'Angle Distance']
 
         # Define colors for the dots (RGB format)
         self.colors = [
@@ -78,6 +85,7 @@ class Main_Widget(QWidget):
         self.next_button = QPushButton("Next")
         self.back_button = QPushButton("Back")
         self.apply_update_button = QPushButton("Apply Params")
+        self.save_to_csv_button = QPushButton("Save Result")
 
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -90,7 +98,13 @@ class Main_Widget(QWidget):
 
         self.spinbox_step.setValue(15)
         self.spinbox_angle.setValue(15)
+
         self._change_frame_slider.setEnabled(False)
+        self.apply_update_button.setEnabled(False)
+        self.next_button.setEnabled(False)
+        self.back_button.setEnabled(False)
+        self.save_to_csv_button.setEnabled(False)
+
         self._change_frame_slider.sliderMoved.connect(self.slider_changed)
         self._change_frame_slider.setMinimum(0)
         self._change_frame_slider.setMinimum(1)
@@ -102,6 +116,7 @@ class Main_Widget(QWidget):
         self.next_button.clicked.connect(self.slider_changed_by_button)
         self.back_button.clicked.connect(self.slider_changed_by_button_back)
         self.apply_update_button.clicked.connect(self.update_params)
+        self.save_to_csv_button.clicked.connect(self.save_result_to_csv)
 
         image_layout = QHBoxLayout()
         image_layout.addWidget(self.image_label)
@@ -131,6 +146,7 @@ class Main_Widget(QWidget):
         buttons_for_change_params.addWidget(self.label_angle_distance)
         buttons_for_change_params.addWidget(self.spinbox_angle)
         buttons_for_change_params.addWidget(self.apply_update_button)
+        buttons_for_change_params.addWidget(self.save_to_csv_button)
         main_buttons_for_change_params.addLayout(buttons_layout_for_open_close_frame)
         main_buttons_for_change_params.addLayout(buttons_for_change_params)
 
@@ -148,10 +164,17 @@ class Main_Widget(QWidget):
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
         self.label_angle_distance.setText(f'Angle Distance {self.spinbox_step.value()}')
 
-
     def update_params(self):
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
         self.label_angle_distance.setText(f'Angle Distance {self.spinbox_angle.value()}')
+        self.temp_result_data.append(1)
+        self.temp_result_data.append(self.file_name_video.split("_")[0])
+        self.temp_result_data.append(self.file_name_video.split("_")[1])
+        self.temp_result_data.append(self.name_video.split("/")[-1])
+        self.temp_result_data.append(self.spinbox_step.value())
+        self.temp_result_data.append(self.spinbox_angle.value())
+        self.result_csv_data.append(self.temp_result_data)
+
         self.data_angels_movmean.pop()
         self.data_angels_movmean.append(count_steps(self, self.valid_data))
         self.ax.clear()
@@ -186,10 +209,14 @@ class Main_Widget(QWidget):
                 self, "Open Video File", "", "Video Files (*.mp4 *.avi *.mkv)"
             )
             if video_file:
+                self.name_video = video_file
+                self.temp_result_data = []
                 self.video_cap = cv2.VideoCapture(video_file)
                 if not self.video_cap.isOpened():
                     raise IOError("Could not open video file.")
 
+                self.next_button.setEnabled(True)
+                self.back_button.setEnabled(True)
                 self.total_frames = int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
                 self.max_frame = self.total_frames - 1
 
@@ -221,6 +248,10 @@ class Main_Widget(QWidget):
                 self, "Open CSV File", "", "CSV Files (*.csv)"
             )
             if csv_file:
+                self.file_name_video = csv_file
+
+                self.apply_update_button.setEnabled(True)
+                self.save_to_csv_button.setEnabled(True)
                 # Load CSV with pandas
 
                 data_init = np.loadtxt(os.path.join(
@@ -327,6 +358,15 @@ class Main_Widget(QWidget):
         if self.video_cap:
             self.video_cap.release()
         event.accept()
+
+    def save_result_to_csv(self):
+        try:
+            # Open file dialog to select video
+            video_file, _ = QFileDialog.getSaveFileName(self, "Save CSV File", "", "CSV Files (*.csv)")
+            if video_file:
+                pd.DataFrame(self.result_csv_data, columns=self.data_csv_columns).to_csv(video_file)
+        except Exception as e:
+            self.show_error_message(f"Error saving CSV: {e}")
 
     @pyqtSlot()
     def exit_clicked(self):
