@@ -1,5 +1,5 @@
 import os
-from ast import Index
+import uuid
 
 import cv2
 import numpy as np
@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLay
     QMessageBox, QSpinBox
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from pandas import Series
 
 from stepanalyzer.algorithms.algorithm_for_steps import count_steps
 from stepanalyzer.image_processing.image_processor import show_frame
@@ -30,13 +29,10 @@ class Main_Widget(QWidget):
         self.coordinates = {}  # координаты с траетория движния всех суставов
         self.data_angels = []  # многомерный массив со всеми данными углов
         self.data_angels_movmean = []  # array with step marks
-        self.result_csv_data = []
-        self.temp_result_data = []
+        self.result_csv_data = []  # все записи связанные заданными параметрами
+        self.local_result_data = []
         self.video_cap = None
         self.current_frame = 0
-        self.min_frame = 0
-        self.max_frame = 0
-        self.total_frames = 0
         self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance', 'Angle Distance']
 
         # Define colors for the dots (RGB format)
@@ -53,15 +49,13 @@ class Main_Widget(QWidget):
             (128, 128, 0),  # Olive
         ]
 
-        # Temp buttons
         self.open_video_button = QPushButton("Open Video")
-        self.open_video_button.clicked.connect(self.open_video)
-
         self.open_csv_trajectory_button = QPushButton("Open CSV trajectory")
-        self.open_csv_trajectory_button.clicked.connect(self.load_csv_data_coordinate)
-
         self.open_csv_button = QPushButton("Open CSV angels")
-        self.open_csv_button.clicked.connect(self.load_csv_angles)
+        self.next_button = QPushButton("Next")
+        self.back_button = QPushButton("Back")
+        self.apply_update_button = QPushButton("Apply Params")
+        self.save_to_csv_button = QPushButton("Save Result")
 
         # Widget for video
         self.image_label = QLabel()
@@ -81,12 +75,6 @@ class Main_Widget(QWidget):
         self.label_step_distance = QLabel()
         self.label_angle_distance = QLabel()
 
-        # Buttons for change frame
-        self.next_button = QPushButton("Next")
-        self.back_button = QPushButton("Back")
-        self.apply_update_button = QPushButton("Apply Params")
-        self.save_to_csv_button = QPushButton("Save Result")
-
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
         self.setFocusPolicy(Qt.StrongFocus)
@@ -95,6 +83,10 @@ class Main_Widget(QWidget):
 
     def setup_UI_widget(self):
         self.image_label.setFixedSize(900, 900)
+
+        self.open_video_button.clicked.connect(self.open_video)
+        self.open_csv_trajectory_button.clicked.connect(self.load_csv_data_coordinate)
+        self.open_csv_button.clicked.connect(self.load_csv_angles)
 
         self.spinbox_step.setValue(15)
         self.spinbox_angle.setValue(15)
@@ -167,14 +159,16 @@ class Main_Widget(QWidget):
     def update_params(self):
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
         self.label_angle_distance.setText(f'Angle Distance {self.spinbox_angle.value()}')
-        self.temp_result_data = []
-        self.temp_result_data.append(1)
-        self.temp_result_data.append(self.file_name_video.split("_")[0].split("/")[-1])
-        self.temp_result_data.append(self.file_name_video.split("_")[1])
-        self.temp_result_data.append(self.name_video.split("/")[-1])
-        self.temp_result_data.append(self.spinbox_step.value())
-        self.temp_result_data.append(self.spinbox_angle.value())
-        self.result_csv_data.append(self.temp_result_data)
+        self.local_result_data = []
+        self.local_result_data.append(uuid.uuid4())
+        self.local_result_data.append(self.file_name_video.split("/")[-2])
+        self.local_result_data.append(self.file_name_video.split("_")[-2])
+        self.local_result_data.append(self.name_video.split("/")[-1])
+        self.local_result_data.append(self.spinbox_step.value())
+        self.local_result_data.append(self.spinbox_angle.value())
+        if bool(self.result_csv_data) and self.result_csv_data[-1][3] == self.local_result_data[3]:
+            self.result_csv_data.pop()
+        self.result_csv_data.append(self.local_result_data)
 
         self.data_angels_movmean.pop()
         self.data_angels_movmean.append(count_steps(self, self.valid_data))
@@ -187,13 +181,17 @@ class Main_Widget(QWidget):
         if position < 60:
             x = np.linspace(0, 120, 120)
             y = self.valid_data[0:120]
-
             x1 = np.linspace(0, 120, 120)
             y1 = self.data_angels_movmean[3][0:120]
+
+        elif position >= len(self.valid_data) - 120:
+            x = np.linspace(len(self.valid_data) - 121, len(self.valid_data) - 1, 120)
+            y = self.valid_data[len(self.valid_data) - 121:len(self.valid_data) - 1]
+            x1 = np.linspace(len(self.valid_data) - 121, len(self.valid_data) - 1, 120)
+            y1 = self.data_angels_movmean[3][len(self.valid_data) - 121:len(self.valid_data) - 1]
         else:
             x = np.linspace(position - 60, position + 60, 120)
             y = self.valid_data[position - 60:position + 60]
-
             x1 = np.linspace(position - 60, position + 60, 120)
             y1 = self.data_angels_movmean[3][position - 60:position + 60]
 
@@ -211,20 +209,18 @@ class Main_Widget(QWidget):
             )
             if video_file:
                 self.name_video = video_file
-                self.temp_result_data = []
+                self.local_result_data = []
                 self.video_cap = cv2.VideoCapture(video_file)
                 if not self.video_cap.isOpened():
                     raise IOError("Could not open video file.")
 
                 self.next_button.setEnabled(True)
                 self.back_button.setEnabled(True)
-                self.total_frames = int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                self.max_frame = self.total_frames - 1
 
                 self.video_loaded = True
                 self._change_frame_slider.setEnabled(True)
                 self._change_frame_slider.setMinimum(0)
-                self._change_frame_slider.setMaximum(self.max_frame)
+                self._change_frame_slider.setMaximum(int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT)) - 1)
                 self._change_frame_slider.setValue(0)
 
                 # Get video width and height for auto-resize
@@ -267,6 +263,8 @@ class Main_Widget(QWidget):
                     self.valid_data = column_data[~np.isnan(column_data)]
                     # Remove NaN values for calculation
                     self.valid_data = moving_average(self.valid_data, 5)
+                    if len(self.valid_data) < self._change_frame_slider.maximum():
+                        self._change_frame_slider.setMaximum(len(self.valid_data) - 1)
                     self.data_angels.append(self.valid_data)
                     self.data_angels_movmean.append(count_steps(self, self.valid_data))
         except Exception as e:
@@ -335,13 +333,13 @@ class Main_Widget(QWidget):
         """Handle key press events for the slider navigation."""
         if event.key() == Qt.Key_Right:  # Right arrow key
             new_value = self._change_frame_slider.value() + 1
-            if new_value <= self.max_frame:
+            if new_value <= self._change_frame_slider.maximum():
                 self._change_frame_slider.setValue(new_value)
                 show_frame(self, new_value)
                 self.update_content(new_value)
         elif event.key() == Qt.Key_Left:  # Left arrow key
             new_value = self._change_frame_slider.value() - 1
-            if new_value >= self.min_frame:
+            if new_value >= self._change_frame_slider.minimum():
                 self._change_frame_slider.setValue(new_value)
                 show_frame(self, new_value)
                 self.update_content(new_value)

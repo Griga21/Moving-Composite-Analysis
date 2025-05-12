@@ -1,41 +1,5 @@
 import cv2
 from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtWidgets import QFileDialog
-
-
-def open_video(self):
-    try:
-        # Open file dialog to select video
-        video_file, _ = QFileDialog.getOpenFileName(
-            self, "Open Video File", "", "Video Files (*.mp4 *.avi *.mkv)"
-        )
-        if video_file:
-            self.video_cap = cv2.VideoCapture(video_file)
-            if not self.video_cap.isOpened():
-                raise IOError("Could not open video file.")
-
-            self.total_frames = int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            self.max_frame = self.total_frames - 1
-
-            self.video_loaded = True
-            self.slider.setEnabled(True)
-            self.slider.setMinimum(0)
-            self.slider.setMaximum(self.max_frame)
-            self.slider.setValue(0)
-
-            # Get video width and height for auto-resize
-            self.video_width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            self.video_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-            self.show_frame(0)
-
-            self.ax.clear()
-            self.canvas.draw()
-            self.valid_data = []
-
-    except Exception as e:
-        self.show_error_message(f"Error loading video: {e}")
-
 
 def show_frame(self, frame_number):
     try:
