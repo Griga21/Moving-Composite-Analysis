@@ -167,8 +167,9 @@ class Main_Widget(QWidget):
     def update_params(self):
         self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
         self.label_angle_distance.setText(f'Angle Distance {self.spinbox_angle.value()}')
+        self.temp_result_data = []
         self.temp_result_data.append(1)
-        self.temp_result_data.append(self.file_name_video.split("_")[0])
+        self.temp_result_data.append(self.file_name_video.split("_")[0].split("/")[-1])
         self.temp_result_data.append(self.file_name_video.split("_")[1])
         self.temp_result_data.append(self.name_video.split("/")[-1])
         self.temp_result_data.append(self.spinbox_step.value())
