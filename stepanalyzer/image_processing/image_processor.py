@@ -10,6 +10,7 @@ def show_frame(self, frame_number):
         if success:
             # Overlay the frame number in the upper right corner
             text = f"Frame: {frame_number}"
+            title = f"{self.name_video.split("/")[-1]}"
             font = cv2.FONT_HERSHEY_SIMPLEX
             font_scale = 1
             color = (255, 255, 255)  # White text
@@ -18,6 +19,7 @@ def show_frame(self, frame_number):
             text_x = self.video_width - text_size[0] - 10  # 10 pixels from the right edge
             text_y = 30  # 30 pixels from the top
             cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness, cv2.LINE_AA)
+            cv2.putText(frame, title, (0, 30), font, font_scale, color, thickness, cv2.LINE_AA)
 
             # If CSV data is available, plot the dots and connect them
             if not self.csv_data.empty and frame_number in self.csv_data['coords'].values:
