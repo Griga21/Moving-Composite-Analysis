@@ -68,7 +68,9 @@ class Main_Widget(QWidget):
         # Slider for frame navigation
         self._change_frame_slider = QSlider(Qt.Horizontal)
         self.spinbox_step = QSpinBox()
+        self.spinbox_step.setMaximum(200)
         self.spinbox_angle = QSpinBox()
+        self.spinbox_step.setMaximum(200)
 
         # Label for slider
         self.label_count_frame = QLabel()
@@ -197,7 +199,7 @@ class Main_Widget(QWidget):
 
         self.ax.plot(x, y)
         self.ax.plot(x1, y1)
-        self.ax.set_title(f"График elbow_collarbone_paw")
+        self.ax.set_title(f"График {self.file_name_video.split("/")[-2]} {self.file_name_video.split("_")[-2]} elbow_collarbone_paw")
         self.ax.axvline(position, -200, 200, c="red", linestyle="--")
         self.canvas.draw()
 
