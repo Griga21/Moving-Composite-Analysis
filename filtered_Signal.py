@@ -71,8 +71,8 @@ bar_colors = ['olive','red',  'red', 'blue',
               'purple']
 
 
-params = {'Intact':[30, 15, 7], 'SCI_3_dpi':[30, 7, 20], 'SCI_TMT_3_dpi':[30, 7, 20], 'SCI_7_dpi':[30, 10, 20], 'SCI_TMT_7_dpi':[30, 10, 20],
-          'SCI_14_dpi':[30, 20, 7], 'SCI_TMT_14_dpi':[ 30, 20, 7], 'SCI_21_dpi':[30, 20, 7], 'SCI_TMT_21_dpi':[30, 15, 7], 'SCI_28_dpi':[50, 20, 7],
+params = {'Intact':[30, 15, 7], 'SCI_3_dpi':[30, 7, 20], 'SCI_TMT_3_dpi':[30, 7, 7], 'SCI_7_dpi':[80, 10, 7], 'SCI_TMT_7_dpi':[80, 10, 7],
+          'SCI_14_dpi':[80, 20, 7], 'SCI_TMT_14_dpi':[80, 20, 7], 'SCI_21_dpi':[80, 20, 7], 'SCI_TMT_21_dpi':[80, 15, 7], 'SCI_28_dpi':[80, 20, 7],
           'SCI_TMT_28_dpi':[50, 20, 7]}
 
 for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object 0 to N-1
@@ -96,7 +96,7 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
         valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
         # plt.plot(valid_data)
 
-        valid_data = moving_average(valid_data, params[N_cond[cond]][2])
+        valid_data = moving_average(valid_data, 7)
         #plt.plot(valid_data, c="b")
 
         peaks_max = local_extrema_windowed(valid_data)
@@ -174,9 +174,8 @@ bplot = ax.boxplot(total_angels,
 
 fig3, ax = plt.subplots()
 ax.set_ylabel('total_count_step')
-bplot = ax.boxplot([[542, 812],[11, 35],[58, 102],[91, 134],[121, 211],[230, 297],[247, 316],[210, 446],[254, 511],
-                    [200, 567], [311, 625]],
-                   patch_artist=True, tick_labels=N_cond
+bplot = ax.boxplot(total_count_steps,
+                   patch_artist=True, tick_labels=N_cond, meanline=True
                    )
 
 

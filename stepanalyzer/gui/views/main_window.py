@@ -1,16 +1,13 @@
 import os
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QApplication
-
 from stepanalyzer.gui.widgets.main_widget import Main_Widget
 
 
 class Main_GUI(QMainWindow):
     def __init__(self):
         super().__init__()
-
 
     def setupUI(self):
         qr = self.frameGeometry()
@@ -28,10 +25,10 @@ class Main_GUI(QMainWindow):
 
         container = Main_Widget()
         self.setCentralWidget(container)
-        #self.setFocusPolicy(Qt.StrongFocus)
-        #self.setFocus()
+        # self.setFocusPolicy(Qt.StrongFocus)
+        # self.setFocus()
 
-        #Menu Bar
+        # Menu Bar
         self._menu_bar = self.menuBar()
         file_menu = self._menu_bar.addMenu('&File')
         edit_menu = self._menu_bar.addMenu('&Edit')
