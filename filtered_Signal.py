@@ -1,16 +1,7 @@
 import os
 
-from fontTools.misc.cython import returns
-from scipy import signal
-from collections import deque
-from statistics import fmean
-
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.signal import find_peaks
-from statsmodels.sandbox.tsa import movmean
-
-from algoritms import normalize_data
 
 N_join = ['elbow', 'hip', 'knee', 'ankle']
 N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 'SCI_14_dpi', 'SCI_TMT_14_dpi',
@@ -58,6 +49,7 @@ def read_data(cond_dir, fname):
         print(f"Error reading {e}")
         return None, None
 
+
 total_count_steps = []
 total_time_steps = []
 total_angels = []
@@ -65,15 +57,16 @@ total_angels = []
 temp_total_count_steps = []
 temp_total_time_steps = []
 temp_total_angels = []
-bar_colors = ['olive','red',  'red', 'blue',
-              'blue','orange', 'orange',
-              'green','green','purple',
+bar_colors = ['olive', 'red', 'red', 'blue',
+              'blue', 'orange', 'orange',
+              'green', 'green', 'purple',
               'purple']
 
-
-params = {'Intact':[30, 15, 7], 'SCI_3_dpi':[30, 7, 20], 'SCI_TMT_3_dpi':[30, 7, 7], 'SCI_7_dpi':[80, 10, 7], 'SCI_TMT_7_dpi':[80, 10, 7],
-          'SCI_14_dpi':[80, 20, 7], 'SCI_TMT_14_dpi':[80, 20, 7], 'SCI_21_dpi':[80, 20, 7], 'SCI_TMT_21_dpi':[80, 15, 7], 'SCI_28_dpi':[80, 20, 7],
-          'SCI_TMT_28_dpi':[50, 20, 7]}
+params = {'Intact': [30, 15, 7], 'SCI_3_dpi': [30, 7, 20], 'SCI_TMT_3_dpi': [30, 7, 7], 'SCI_7_dpi': [80, 10, 7],
+          'SCI_TMT_7_dpi': [80, 10, 7],
+          'SCI_14_dpi': [80, 20, 7], 'SCI_TMT_14_dpi': [80, 20, 7], 'SCI_21_dpi': [80, 20, 7],
+          'SCI_TMT_21_dpi': [80, 15, 7], 'SCI_28_dpi': [80, 20, 7],
+          'SCI_TMT_28_dpi': [50, 20, 7]}
 
 for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object 0 to N-1
     cond = cond_idx  # Use consistent variable types for indexing
@@ -82,7 +75,6 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
     # fdir = str(fdir) #Cast values to string so they are of the same object type
     fnames = [f for f in os.listdir(cond_dir) if
               f.endswith('_angles.csv')]  # List all angle filenames from a directory.
-
 
     for n, fname in enumerate(fnames):
 
@@ -97,13 +89,13 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
         # plt.plot(valid_data)
 
         valid_data = moving_average(valid_data, 7)
-        #plt.plot(valid_data, c="b")
+        # plt.plot(valid_data, c="b")
 
         peaks_max = local_extrema_windowed(valid_data)
-        #plt.scatter(peaks_max, valid_data[peaks_max])
+        # plt.scatter(peaks_max, valid_data[peaks_max])
 
         peaks_min = local_extrema_windowed(valid_data, mode="min")
-        #plt.scatter(peaks_min, valid_data[peaks_min])
+        # plt.scatter(peaks_min, valid_data[peaks_min])
 
         result = []
         temp_array = []
@@ -144,13 +136,17 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
                     start_step = True
                 prev_min = False
 
-
+        differt_beetwen_length = len(temp_total_angels)
         for i in range(0, len(result) - 2, 3):
-            #plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
+            # plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
             temp_total_time_steps.append(result[i + 2] - result[i])
             temp_total_angels.append(abs(valid_data[result[i]] - valid_data[result[i + 1]]))
             temp_total_angels.append(abs(valid_data[result[i + 1]] - valid_data[result[i + 2]]))
-        temp_total_count_steps.append(len(temp_total_angels) / 2)
+
+        if temp_total_count_steps!=[]:
+            temp_total_count_steps.append((len(temp_total_angels) - differt_beetwen_length) / 2 )
+        else:
+            temp_total_count_steps.append(len(temp_total_angels) / 2)
     total_count_steps.append(temp_total_count_steps)
     temp_total_count_steps = []
     total_time_steps.append(temp_total_time_steps)
@@ -174,12 +170,57 @@ bplot = ax.boxplot(total_angels,
 
 fig3, ax = plt.subplots()
 ax.set_ylabel('total_count_step')
-bplot = ax.boxplot(total_count_steps,
-                   patch_artist=True, tick_labels=N_cond, meanline=True
-                   )
+colors = [
+    'green',
+    'red',
+    'blue',
+    'cyan',
+    'magenta',
+    'yellow',
+    'black',
+    'teal',
+    'orange',
+    'purple',
+    'brown'
+]
+
+temp_i = 0
+for i in total_count_steps:
+    temp = 1
+    temp_bottom = 0
+    for j in i:
+        ax.bar(N_cond[temp_i], j,bottom=temp_bottom, color=colors[temp])
+        temp_bottom+= j
+        temp+=1
+    temp_i+=1
+
+plt.grid(axis="y")
+plt.legend([1,2,3,4,5,6,7,8,9,10])
 
 
 plt.show()
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import ttest_ind
+# Примерные данные: количество шагов для двух групп
+group_a = np.array([5000, 5200, 4800, 5100, 4950])
+group_b = np.array([5300, 5500, 5600, 5400, 5350])
 
+# Вычисление t-статистики и p-value
+t_stat, p_value = ttest_ind(group_a, group_b)
+
+# Подготовка данных для ступенчатого графика
+days = np.arange(1, len(group_a) + 1)
+plt.step(days, group_a, where='mid', label='Группа A')
+plt.step(days, group_b, where='mid', label='Группа B')
+
+# Добавление подписи с p-value
+plt.title(f'Сравнение количества шагов\np-value = {p_value:.4f}')
+plt.xlabel('День')
+plt.ylabel('Количество шагов')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
