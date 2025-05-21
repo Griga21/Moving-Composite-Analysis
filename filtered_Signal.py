@@ -86,7 +86,8 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
         column_data = column_data.astype(np.float64)
 
         valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-        # plt.plot(valid_data)
+        plt.plot(valid_data)
+        plt.show()
 
         valid_data = moving_average(valid_data, 7)
         # plt.plot(valid_data, c="b")
