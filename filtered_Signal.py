@@ -86,11 +86,16 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
         column_data = column_data.astype(np.float64)
 
         valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-        plt.plot(valid_data)
-        plt.show()
+        plt.plot(valid_data,linewidth = 3)
+
 
         valid_data = moving_average(valid_data, 7)
-        # plt.plot(valid_data, c="b")
+        plt.plot(valid_data, c="r", linewidth = 3)
+        plt.xlabel('Кадры',size = 20)
+        plt.ylabel('Сгибание/Разгибание сустава (градусы)',size = 20)
+        plt.title('Среднее скользящие окно',size = 20)
+        plt.grid(True)
+        plt.show()
 
         peaks_max = local_extrema_windowed(valid_data)
         # plt.scatter(peaks_max, valid_data[peaks_max])

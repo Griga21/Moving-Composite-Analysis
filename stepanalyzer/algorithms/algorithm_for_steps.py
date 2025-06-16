@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.ma.extras import average
 
 
 def local_extrema_windowed(signal, window_size=7, mode='max'):
@@ -17,7 +18,14 @@ def local_extrema_windowed(signal, window_size=7, mode='max'):
     return extrema_indices
 
 
+
 def count_steps(self, local_data):
+    """Form a complex number.
+
+    @:param local_data - array with angels
+    @re
+    """
+    result_array  = []
     peaks_max = local_extrema_windowed(local_data)
 
     peaks_min = local_extrema_windowed(local_data, mode="min")
@@ -56,9 +64,15 @@ def count_steps(self, local_data):
                 result.append(temp_array[i])
                 start_step = True
             prev_min = False
-
     temp_result = np.zeros(len(self.valid_data))
     for i in range(0, len(result) - 2, 3):
         for j in range(result[i], result[i + 2] + 1):
             temp_result[j] = self.valid_data[result[i]]
     return temp_result
+
+
+def count_average_time_step(step_array):
+    average_time_step = 0
+    for i in range(0, len(step_array) - 1, 2):
+        average_time_step += (step_array[i] + step_array[i + 1]) / 2
+    return average_time_step

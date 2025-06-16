@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from pandas.core.interchange.dataframe_protocol import DataFrame
 from scipy.ndimage import label
 
 N_join = ['elbow', 'hip', 'knee', 'ankle']
@@ -84,7 +85,8 @@ params_for_video = {}
 
 data_csv = pd.read_csv("data/Result_SCI_7.csv", usecols=['Group', 'Number Rat',
                                                          'Step Distance', 'Angle Distance'])
-
+columns = ['Group', 'Number Rat', 'Count Step', 'Average Time Step', 'Average Angel']
+result_csv_data = []
 for index, row in data_csv.iterrows():
     key = row['Group'] + "_" + str(row['Number Rat'])
     params_for_video[key] = [row['Step Distance'], row['Angle Distance']]
@@ -163,12 +165,38 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
         result_count_steps[fname.split("_angles")[0]] = len(temp_total_time_steps)
         result_time_steps[fname.split("_angles")[0]] = temp_total_time_steps
         result_angels[fname.split("_angles")[0]] = temp_total_angels
+        temp = []
+        if fname.split("_")[0] != "Intact":
+            temp.append(fname.split("_")[0] + " " + fname.split("_")[1] + " " + fname.split("_")[2])
+        else:
+            temp.append(fname.split("_")[0])
+
+        if fname.split("_")[0] == "Intact":
+            temp.append(fname.split("_")[1])
+        else:
+            if fname.split("_")[1] == "TMT":
+                temp.append(fname.split("_")[4])
+            else:
+                temp.append(fname.split("_")[3])
+
+
+        temp.append(len(temp_total_time_steps))
+        if temp_total_time_steps:
+            temp.append(sum(temp_total_time_steps) / len(temp_total_time_steps))
+        else:
+            temp.append(0)
+        if temp_total_angels:
+            temp.append(sum(temp_total_angels) / len(temp_total_angels))
+        else:
+            temp.append(0)
+        result_csv_data.append(temp)
         temp_total_angels = []
         temp_total_time_steps = []
 
+pd.DataFrame(result_csv_data, columns=columns).to_csv("Result.csv")
 fig3, ax = plt.subplots()
-ax.set_ylabel('Количество шагов')
-ax.set_title("Количество шагов по каждому видео")
+ax.set_ylabel('Количество шагов', size=20)
+ax.set_title("Количество шагов по каждому видео", size=20)
 temp_i = 0
 for i in N_cond:
     count_array = []
@@ -182,6 +210,7 @@ for i in N_cond:
     total_count_steps.append(count_array)
 
 import matplotlib.patches as mpatches
+
 plt.grid(axis="y")
 red_patch = mpatches.Patch(color='red', label='1')
 blue_patch = mpatches.Patch(color='blue', label='2')
@@ -223,15 +252,14 @@ bplot = ax.boxplot(total_angels,
                    )
 plt.show()
 
-
 from scipy.stats import ttest_ind
 from scipy.stats import mannwhitneyu
-for i in range(1,11,2):
-    stat, p_value = ttest_ind(total_count_steps[i], total_count_steps[i+1], equal_var=False)
-    print(f'Статистика t: {stat:.4f}, p-value: {p_value:.4f}')
-    stat, p_value = mannwhitneyu(total_count_steps[i], total_count_steps[i+1], alternative='two-sided')
-    print(f'Статистика U: {stat:.4f}, p-value: {p_value:.4f}')
 
+for i in range(1, 11, 2):
+    stat, p_value = ttest_ind(total_count_steps[i], total_count_steps[i + 1], equal_var=False)
+    print(f'Статистика t: {stat:.4f}, p-value: {p_value:.4f}')
+    stat, p_value = mannwhitneyu(total_count_steps[i], total_count_steps[i + 1], alternative='two-sided')
+    print(f'Статистика U: {stat:.4f}, p-value: {p_value:.4f}')
 
 import seaborn as sns
 import matplotlib.pyplot as plt

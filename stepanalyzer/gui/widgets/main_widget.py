@@ -33,8 +33,8 @@ class Main_Widget(QWidget):
         self.local_result_data = []
         self.video_cap = None
         self.current_frame = 0
-        self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance', 'Angle Distance']
-
+        self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance',
+                                 'Angle Distance', 'Average Time', 'Average Distance', 'Average Angele']
         # Define colors for the dots (RGB format)
         self.colors = [
             (255, 0, 0),  # Red
@@ -174,6 +174,7 @@ class Main_Widget(QWidget):
 
         self.data_angels_movmean.pop()
         self.data_angels_movmean.append(count_steps(self, self.valid_data))
+
         self.ax.clear()
         self.update_content(self._change_frame_slider.value())
 
@@ -199,7 +200,8 @@ class Main_Widget(QWidget):
 
         self.ax.plot(x, y)
         self.ax.plot(x1, y1)
-        self.ax.set_title(f"График {self.file_name_video.split("/")[-2]} {self.file_name_video.split("_")[-2]} elbow_collarbone_paw")
+        self.ax.set_title(
+            f"График {self.file_name_video.split("/")[-2]} {self.file_name_video.split("_")[-2]} elbow_collarbone_paw")
         self.ax.axvline(position, -200, 200, c="red", linestyle="--")
         self.canvas.draw()
 
