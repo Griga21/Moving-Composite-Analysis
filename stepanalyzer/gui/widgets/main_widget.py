@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLay
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from stepanalyzer.algorithms.algorithm_for_steps import count_steps
+from stepanalyzer.Algorithms.algorithm_for_steps import count_steps
 from stepanalyzer.image_processing.image_processor import show_frame
 
 
