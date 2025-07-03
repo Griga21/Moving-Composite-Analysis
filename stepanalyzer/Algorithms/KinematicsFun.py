@@ -2,6 +2,8 @@ import os
 
 import numpy as np
 
+from stepanalyzer.Algorithms.ReadDataFile import read_csv_coordinate
+
 
 def moving_average(signal, window_size):
     return np.convolve(signal, np.ones(window_size) / window_size, mode='same')
@@ -23,7 +25,13 @@ def local_extrema_windowed(signal, window_size=15, mode='max'):
     return extrema_indices
 
 
-def definition_step_cycle(cond_dir, params_for_video, fname):
+def definition_step_cycle(cond_dir, fname, params_for_video):
+    """Func for definition step cycle.
+    @:param cond_dir - directory of the file path
+    @:param params_for_video - params of step distance and angel
+    @:param fname - file name
+    @:return dict{Group+Number_Rut:[Step Params, Angle Distance]}
+    """
     data_init = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)
     data = data_init[1:]
     data = data.astype(np.float64)
@@ -36,6 +44,16 @@ def definition_step_cycle(cond_dir, params_for_video, fname):
     valid_data = moving_average(valid_data, 7)
     peaks_max = local_extrema_windowed(valid_data)
     peaks_min = local_extrema_windowed(valid_data, mode="min")
+
+    average_min = 0
+    average_max = 0
+
+    if peaks_max and peaks_min:
+        average_max = average_angle(peaks_max, valid_data)
+        average_min = average_angle(peaks_min, valid_data)
+
+    if average_max < average_min:
+        print(f'Ошибка в расчетах в файле {fname}')
 
     result = []
     temp_array = []
@@ -73,4 +91,38 @@ def definition_step_cycle(cond_dir, params_for_video, fname):
                 result.append(temp_array[i])
                 start_step = True
             prev_min = False
-    return result
+    return result, average_max, average_min
+
+
+def average_angle(list_points, valid_data):
+    sum = 0
+    for i in range(len(list_points)):
+        sum += valid_data[list_points[i]]
+    return sum / len(list_points)
+
+
+def calculate_number_time_steps(list_steps):
+    """Read params for all videos.
+    @:param path - path to the file with data params
+    @:param use_columns - array of use columns
+    @:return all count step, average time step
+    """
+    count_step = 0
+    average_time = 0
+    if len(list_steps) > 4:
+        x = 0
+        if list_steps[0] < list_steps[1]:
+            x = 1
+        for i in range(x, len(list_steps) - 2, 3):
+            average_time += list_steps[i + 2] - list_steps[i]
+            count_step += 1
+        return count_step, average_time / count_step
+    else:
+        return 0, 0
+
+
+def calculate_average_height(list_steps, data_path):
+    coordinates = read_csv_coordinate(data_path, "toe_y")
+    for i in range(0, len(list_steps), 2):
+        print(i)
+    return None

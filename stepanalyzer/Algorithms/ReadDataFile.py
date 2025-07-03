@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 
 
@@ -22,9 +20,17 @@ def read_params(path, use_columns):
     return params_for_video
 
 
-def read_head_files(path, cond):
+def read_csv_coordinate(file_name, use_columns):
     """Read data with angles.
-    @:param cond - array with file name
-    @:return array of all names files
+    @:param file_name - path+file_name
+    @:param use_columns - y columns
+    @:return list Y-[coordinates]
     """
-
+    result_coordinates = []
+    try:
+        data_csv = pd.read_csv(file_name, usecols=use_columns)
+        for index, row in data_csv.iterrows():
+            result_coordinates.append(row[use_columns])
+    except FileNotFoundError:
+        print(f'File with path {file_name} not found.')
+    return result_coordinates
