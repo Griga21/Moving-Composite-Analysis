@@ -1,0 +1,94 @@
+,id,Group,Number Rat,Name video,Step Distance,Angle Distance
+0,228e2487-11db-492d-9d59-1bf4fff2697e,Intact,1,Тreadmill Intact 1.avi,30,15
+1,07b0c3e4-8f60-47d6-9ab5-c8251d94b7c3,Intact,2,Тreadmill Intact 2.avi,30,10
+2,c78844e9-f2ea-46d1-aa52-b6bc8ee20963,Intact,3,Тreadmill Intact 3.avi,25,15
+3,5d1b92f6-bec2-4721-827a-e4d56bdd09ae,Intact,4,Тreadmill Intact 4.avi,25,15
+4,6ad50748-41e5-49de-8f30-a6c07e90a5cd,Intact,5,Тreadmill Intact 5.avi,25,15
+5,b1a14f66-01fb-42ed-a3df-368f047d5769,SCI_3_dpi,1,Rat 1 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,25,5
+6,e3466c7f-8d0b-4ef5-8b2d-684142062937,SCI_3_dpi,2,Rat 2 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,8
+7,97d59f00-2c3d-4b0c-8e44-e5b7172c13cf,SCI_3_dpi,3,Rat 3 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,10
+8,999dde3d-8046-4228-86fa-ac735ab108a8,SCI_3_dpi,4,Rat 4 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,10
+9,3f533340-25cc-42c6-bc4c-22ca48b95894,SCI_3_dpi,5,Rat 5 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,10
+10,1ef2b76e-a793-42be-846f-093ebc25fb2b,SCI_3_dpi,6,Rat 6 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,8
+11,4cb80bfa-9a44-4a64-b862-ef0491b7cc52,SCI_3_dpi,7,Rat 7 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,50,10
+12,a6d20039-f371-48a0-b08a-677f4e4053d6,SCI_3_dpi,8,Rat 8 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,50,10
+13,d1272fb6-d6ba-4666-a1be-92eb8df7fa94,SCI_3_dpi,10,Rat 10 SCI (3 dpi) Treadmill  03_08_23DLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,50,10
+14,f55b493e-2848-4998-901e-22d554f55715,SCI_TMT_3_dpi,1,Rat 1 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,50,10
+15,b6578de8-d5ba-4820-a5da-856c69568232,SCI_TMT_3_dpi,2,Rat 2 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,50,10
+16,e29cfd75-9621-4060-ad13-c5dfa688c6a7,SCI_TMT_3_dpi,3,Rat 3 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,50,10
+17,fbe226b3-76f5-4fb9-8fad-a7d5ca4bf26b,SCI_TMT_3_dpi,4,Rat 4 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,50,10
+18,68fe991d-7686-4bda-9d7f-2bf1e985cfb2,SCI_TMT_3_dpi,5,Rat 5 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,10,8
+19,ba8bddd1-346d-4200-95c4-4fa1ce11b40c,SCI_TMT_3_dpi,6,Rat 6 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,8
+20,56ffde10-18ac-40c7-a1b6-3cb24f38fbcc,SCI_TMT_3_dpi,7,Rat 7 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,8
+21,a56e2888-a319-4ae1-91d9-f1796626dfa5,SCI_TMT_3_dpi,9,Rat 9 SCI (3 dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,8
+22,3d7ee443-09dc-4bd7-9287-0f8074d9e98a,SCI_TMT_3_dpi,10,Rat 10 SCI (3dpi) TreadmillDLC_resnet50_all_part_SCIDec18shuffle1_50000_labeled.mp4,30,8
+23,8c998bb5-f086-4856-a347-a9fdc2fa3961,SCI_7_dpi,1,Rat 1 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,30,10
+24,7b99b4db-3bf5-4534-b503-34c630db8d42,SCI_7_dpi,2,Rat 2 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,30,10
+25,01ed04b3-26fc-4f3a-b45d-098e90d45edf,SCI_7_dpi,3,Rat 3 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,30,10
+26,a506e5d3-1fc8-40fb-816b-129686d56de0,SCI_7_dpi,4,Rat 4 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,99,10
+27,20c4977d-0ec1-4e9c-8eac-018381f0f7e4,SCI_7_dpi,5,Rat 5 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,60,10
+28,408680b0-79b1-4213-b96c-b909cc578216,SCI_7_dpi,6,Rat 6 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,60,8
+29,927b4f43-4a2b-4e05-bd86-0ed4a4784ade,SCI_7_dpi,7,Rat 7 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,60,8
+30,e1e4c852-9d56-484b-83bf-83072dc21ae3,SCI_7_dpi,8,Rat 8 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,30,15
+31,4d5d3fce-cbbc-4592-994b-cd4ac3afc081,SCI_7_dpi,9,Rat 9 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,30,10
+32,eddabe9a-49d0-4ece-b39b-20b386111eb8,SCI_7_dpi,10,Rat 10 SCI (7 dpi) Treadmill  03_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,30,10
+0,fafdc0d9-dd7c-4c5e-88b8-e86d16f0d47d,SCI_TMT_7_dpi,1,SCI 1 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,50,15
+1,cdd4482a-7fad-4d2c-83b2-0b5906c0fa74,SCI_TMT_7_dpi,2,SCI 2 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,50,15
+2,87f0bf65-3f66-4758-a1c9-0dd71e48fbf1,SCI_TMT_7_dpi,3,SCI 3 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,90,30
+3,53d09410-9c1c-4fc6-914d-dc8b18defd6e,SCI_TMT_7_dpi,4,SCI 4 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,90,30
+4,afbff81f-452f-431b-addf-e43650013964,SCI_TMT_7_dpi,5,SCI 5 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,120,10
+5,38379405-4003-4f5e-8aa9-1657edfcf893,SCI_TMT_7_dpi,6,SCI 6 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,50,10
+6,3932a244-aab7-493e-9a55-149e06869d19,SCI_TMT_7_dpi,7,SCI 7 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,70,10
+7,6eab4c0a-dfa1-47ca-9d37-0cc444edf3e6,SCI_TMT_7_dpi,8,SCI 8 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,120,15
+8,0e833bf5-593e-4161-8f02-998cf84c6cf8,SCI_TMT_7_dpi,9,SCI 9 (7 dpi) Treadmill Rehabilitation group 07_08_23DLC_resnet50_all_parts_SCIDec19shuffle1_50000_labeled.mp4,120,15
+9,c15f06e1-0c62-48df-b7d6-bb01475009e2,SCI_14_dpi,1,SCI 1 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,60,15
+10,ce938615-8e2a-4bb2-bd2e-7c7c89d5cc55,SCI_14_dpi,2,SCI 2(14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,20
+11,f5ce005d-4604-4ab3-a74d-9152eb541b67,SCI_14_dpi,3,SCI   3 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+12,0aa03fec-9b6c-423c-90d1-84cc890ea53a,SCI_14_dpi,4,SCI 4(14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+13,e8285df4-ca65-431d-b50f-1ce951e59d7f,SCI_14_dpi,5,SCI  5 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+14,68785629-4d53-41fc-ae98-82ee59d72d05,SCI_14_dpi,6,SCI 6 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+15,2c8957ce-5433-4d6e-b3a9-8c2c48828fe2,SCI_14_dpi,7,SCI 7 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+16,894cc3e1-1a8f-4a78-84dc-8e721e1a5194,SCI_14_dpi,8,SCI 8 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+16,894cc3e1-1a8f-4a78-84dc-8e721e1a5194,SCI_14_dpi,9,SCI 9 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+17,894cc3e1-1a8f-4a78-84dc-8e721e1a5191,SCI_14_dpi,10,SCI 10 (14 dpi) Treadmill  10_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+17,931b73bc-02cb-4a00-b14b-8761b9e8b15d,SCI_TMT_14_dpi,1,SCI 1 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,14
+18,76460dca-3d04-42cf-be00-711e2fb1f91c,SCI_TMT_14_dpi,2,SCI 2 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,50,20
+19,e5190265-fb6f-4f2c-aac7-a4ec3ea74aca,SCI_TMT_14_dpi,3,SCI 3 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,50,20
+20,1468286a-36ff-4a8c-a978-54b0f6be29b2,SCI_TMT_14_dpi,4,SCI 4 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,30
+21,5716c5a9-d360-4663-81fe-f324dbd5755e,SCI_TMT_14_dpi,5,SCI 5 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,100,30
+22,30b7f774-2967-4c7a-9dfb-2f97e2a0d8df,SCI_TMT_14_dpi,6,SCI 6 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,100,30
+23,edf08b66-28d4-45e1-a245-687ae39573bd,SCI_TMT_14_dpi,7,SCI 7 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,100,20
+24,c6a676e9-d0b8-4d72-b191-7d46a2b29c14,SCI_TMT_14_dpi,8,SCI 8 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,40
+25,8d1e4704-54de-4f48-8e12-59b5043299a4,SCI_TMT_14_dpi,10,SCI 10 (14 dpi) Treadmill Rehabilitation group 14_08_23DLC_resnet50_all_parts_SCIDec26shuffle1_100000_labeled.mp4,80,40
+26,f3a417f4-a5fe-4d11-9e89-79d4348f58fd,SCI_21_dpi,1,SCI 1 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40
+27,2dd0b629-dbd3-4400-81b0-5d0be81051df,SCI_21_dpi,2,SCI 2 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,60,40
+28,9cd2e941-cec0-4624-90f9-b91d105a0ed0,SCI_21_dpi,3,SCI 3 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,120,40
+29,a2e03836-38ab-47fd-b88b-ec091737027b,SCI_21_dpi,5,SCI 5 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,120,40
+30,b7228784-c0f3-4327-b948-a840372839b5,SCI_21_dpi,6,SCI 6 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,120,40
+31,2054baff-7493-4906-b9aa-af338305deff,SCI_21_dpi,7,SCI 7 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,100,40
+32,ffad8029-31be-4417-b2ba-32465b6d07fb,SCI_21_dpi,9,SCI 9 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,30
+33,26753ce7-8dc7-4d21-9f17-4c3e88400bc7,SCI_21_dpi,10,SCI 10 (21 dpi) Treadmill 17_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,30
+0,77cf2af0-cb5c-4025-81ba-73d5bd8d7112,SCI_28_dpi,1,SCI 1 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+1,6e3c275b-e8d0-4eaf-8935-5c11eac0a768,SCI_28_dpi,2,SCI 2 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+2,c7895f6c-55b0-4741-9b67-fd651956bd75,SCI_28_dpi,3,SCI 3 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+3,f24520af-152b-458d-8ae1-39b80abd76bf,SCI_28_dpi,5,SCI 5 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+4,082cab00-9267-43b8-9dee-5e35ad42a459,SCI_28_dpi,6,SCI 6 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+5,1ec49462-ec1c-45fd-ae84-dca0abf17c58,SCI_28_dpi,7,SCI 7 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+6,9a3d9346-86e0-41ba-bce3-58c215c8f9da,SCI_28_dpi,9,SCI 9 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+7,2750d18a-55af-4dfc-ad5f-13a6f3dedd16,SCI_28_dpi,10,SCI 10 (28 dpi) Treadmill 24_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+8,2e2601b7-4b79-49b9-8814-97f7af5266cc,SCI_TMT_28_dpi,1,SCI 1 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+9,40e9fcce-b799-4918-bf33-5d7608490de8,SCI_TMT_28_dpi,2,SCI 2 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+10,d0177d57-c768-4df4-9f39-f58ff34c17a9,SCI_TMT_28_dpi,3,SCI 3 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+11,7f834fd4-0355-4fb5-85c3-0f79e9cc37b5,SCI_TMT_28_dpi,4,SCI 4 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+12,3b06f202-d004-4778-a79e-69b126a35408,SCI_TMT_28_dpi,5,SCI 5 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+13,6629f1a9-27a2-42c2-a0d1-5f93beabbf9c,SCI_TMT_28_dpi,6,SCI 6 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+14,b6811c93-8f9c-436b-9063-42e5a6b30651,SCI_TMT_28_dpi,8,SCI 8 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+15,30c98d7b-cd7c-413f-b6f4-90c1052f5161,SCI_TMT_28_dpi,10,SCI 10 (28 dpi) Treadmill Rehabilitation group 28_08_23DLC_resnet50_all_parts_SCIDec28shuffle1_100000_labeled.mp4,80,30
+0,ff295352-c00f-4779-bd5a-040640e4f31c,SCI_TMT_21_dpi,1,SCI 1 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,30
+1,068fcf07-6454-4016-b080-313be152a83f,SCI_TMT_21_dpi,2,SCI 2 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40
+2,a86b8bcc-c56f-401f-9933-2f4e8cb59b88,SCI_TMT_21_dpi,3,SCI 3 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40
+3,3c69c8dd-4f6e-48f9-aee8-1152a8f2c81a,SCI_TMT_21_dpi,4,SCI 4 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40
+4,bd819316-4530-428e-af7f-a00f97460b82,SCI_TMT_21_dpi,5,SCI 5 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40
+5,ccba99c9-f828-474c-9960-31b59fedd7b1,SCI_TMT_21_dpi,6,SCI 6 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40
+6,f19e432c-d31e-4307-9666-3daafd8443ce,SCI_TMT_21_dpi,8,SCI 8 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40
+7,03422dad-b551-4d10-97b0-d386d15b04d5,SCI_TMT_21_dpi,10,SCI 10 (21 dpi) Treadmill Rehabilitation group 21_08_23DLC_resnet50_all_parts_SCIDec22shuffle1_100000_labeled.mp4,80,40

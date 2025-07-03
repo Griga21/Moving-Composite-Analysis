@@ -28,16 +28,7 @@ def local_extrema_windowed(signal, window_size=15, mode='max'):
     return extrema_indices
 
 
-def read_data(cond_dir, fname):
-    """Reads rotation angles and magnitudes, handling potential errors."""
-    try:
-        data = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)  # Assuming CSV with commas
-        magnitudes_fname = fname[:-10] + 'magnitudes.csv'  # Removing the _angles part
-        tbl = np.loadtxt(os.path.join(cond_dir, magnitudes_fname), delimiter=',', dtype=str)  # Assuming CSV with commas
-        return data, tbl
-    except (FileNotFoundError, ValueError) as e:
-        print(f"Error reading {e}")
-        return None, None
+
 
 
 total_time_steps = []
@@ -65,7 +56,7 @@ params_for_video = {}
 data_csv = pd.read_csv("data/Result_SCI_7.csv", usecols=['Group', 'Number Rat',
                                                          'Step Distance', 'Angle Distance'])
 columns = ['Group', 'Day', 'Number Rat',
-           'Step Params', 'Angel Params',
+           'Step Params', 'Angle Params',
            'Count Step', 'Average Time Step', 'Total Time Step(%)',
            'Step Height', 'Max Angel', 'Min Angel']
 result_csv_data = []
@@ -75,7 +66,7 @@ for index, row in data_csv.iterrows():
 
 for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object 0 to N-1
     cond = cond_idx  # Use consistent variable types for indexing
-    cond_dir = os.path.join('./data/', N_cond[cond])  # Directory for this condition
+    cond_dir = os.path.join('data/', N_cond[cond])  # Directory for this condition
     fdir = os.path.join(cond_dir, '*_angles.csv')  # File for each condition
     # fdir = str(fdir) #Cast values to string so they are of the same object type
     fnames = [f for f in os.listdir(cond_dir) if
@@ -161,8 +152,8 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
             temp.append(fname.split("_")[1])
             temp.append(fname.split("_")[3])
 
-        temp.append(None)
-        temp.append(None)
+        temp.append(params_for_video[fname.split("_angles")[0]][0])
+        temp.append(params_for_video[fname.split("_angles")[0]][1])
 
         # Добавление количества шагов
         temp.append(len(temp_total_time_steps))
@@ -172,9 +163,10 @@ for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object
             temp.append(sum(temp_total_time_steps) / len(temp_total_time_steps))
         else:
             temp.append(0)
+
         # Процент нашагивания
         if temp_total_time_steps:
-            temp.append(0)
+            temp.append(sum(temp_total_time_steps) / len(valid_data) * 100)
         else:
             temp.append(0)
 
