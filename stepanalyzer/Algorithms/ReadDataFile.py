@@ -28,9 +28,8 @@ def read_csv_coordinate(file_name, use_columns):
     """
     result_coordinates = []
     try:
-        data_csv = pd.read_csv(file_name, usecols=use_columns)
-        for index, row in data_csv.iterrows():
-            result_coordinates.append(row[use_columns])
+        data_csv = pd.read_csv(file_name,encoding='utf-8')
+        result_coordinates = data_csv[use_columns].tolist()
     except FileNotFoundError:
         print(f'File with path {file_name} not found.')
     return result_coordinates

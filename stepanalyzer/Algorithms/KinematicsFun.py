@@ -82,7 +82,7 @@ def definition_step_cycle(cond_dir, fname, params_for_video):
                 result.pop()
                 result.append(temp_array[i])
         elif start_step and prev_min and temp_array[i] in peaks_max:
-            if temp_array[i] - result[-1] < params_for_video.get(fname.split("_angles")[0])[0]:
+            if temp_array[i] - result[-2] < params_for_video.get(fname.split("_angles")[0])[0]:
                 result.append(temp_array[i])
                 start_step = False
             else:
@@ -123,6 +123,14 @@ def calculate_number_time_steps(list_steps):
 
 def calculate_average_height(list_steps, data_path):
     coordinates = read_csv_coordinate(data_path, "toe_y")
-    for i in range(0, len(list_steps), 2):
-        print(i)
-    return None
+    sum = 0
+    counter = 0
+    for i in range(0, len(list_steps)-1, 3):
+        if coordinates[list_steps[i+1]] - coordinates[list_steps[i]]>0:
+            sum+=coordinates[list_steps[i+1]] - coordinates[list_steps[i]]
+            counter+=1
+
+    if counter!=0 and sum!=0:
+        return sum/counter
+    else:
+        return 0
