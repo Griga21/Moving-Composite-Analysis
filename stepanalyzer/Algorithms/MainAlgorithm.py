@@ -1,6 +1,8 @@
 import os
 
 import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
 
 from stepanalyzer.Algorithms.KinematicsFun import definition_step_cycle, calculate_number_time_steps, \
     calculate_average_height
@@ -11,9 +13,9 @@ N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 
           'SCI_TMT_21_dpi', 'SCI_28_dpi', 'SCI_TMT_28_dpi']
 colums = ['toe_x', 'toe_y']
 data_csv_columns = ['Group', 'Day', 'Number Rat',
-           'Step Params', 'Angle Params',
-            'Average Max Angel','Average Min Angel',
-            'Average Time Step','Total Count Step','Average height Step']
+                    'Step Params', 'Angle Params',
+                    'Average Max Angel', 'Average Min Angel',
+                    'Average Step Duration (s)', 'Total Count Step', 'Average height Step']
 result_csv_data = []
 if __name__ == "__main__":
     result_step_cycle = {}  # Dict{"file_name":Array with step position}
@@ -44,7 +46,8 @@ if __name__ == "__main__":
                 str = key_map[:-2]
             else:
                 str = key_map[:-3]
-            result_average_height[key_map] = calculate_average_height(result_step_cycle[key_map], trajectory_path+"/"+str+"/"+key_map+".csv")
+            result_average_height[key_map] = calculate_average_height(result_step_cycle[key_map],
+                                                                      trajectory_path + "/" + str + "/" + key_map + ".csv")
             temp = []
             if fname.split("_")[1] != "TMT":
                 temp.append(fname.split("_")[0])
@@ -68,15 +71,17 @@ if __name__ == "__main__":
 
             temp.append(result_average_max[key_map])
             temp.append(result_average_min[key_map])
-            temp.append(result_average_time_step[key_map])
+            temp.append(result_average_time_step[key_map] / 60)
             temp.append(result_all_count_step[key_map])
             temp.append(result_average_height[key_map])
             result_csv_data.append(temp)
 
     # Open file dialog to select video
     print(result_average_max)
+
     print(result_average_min)
     print(result_average_time_step)
     print(result_all_count_step)
     print(result_average_height)
-    pd.DataFrame(result_csv_data, columns=data_csv_columns).to_csv("Result.csv")
+    #pd.DataFrame(result_csv_data, columns=data_csv_columns).to_csv("Result.csv")
+

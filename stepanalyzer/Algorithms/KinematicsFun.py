@@ -110,10 +110,7 @@ def calculate_number_time_steps(list_steps):
     count_step = 0
     average_time = 0
     if len(list_steps) > 4:
-        x = 0
-        if list_steps[0] < list_steps[1]:
-            x = 1
-        for i in range(x, len(list_steps) - 2, 3):
+        for i in range(0, len(list_steps) - 2, 3):
             average_time += list_steps[i + 2] - list_steps[i]
             count_step += 1
         return count_step, average_time / count_step
