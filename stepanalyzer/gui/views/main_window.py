@@ -2,7 +2,9 @@ import os
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QApplication
-from stepanalyzer.gui.widgets.main_widget import Main_Widget
+from PyQt5 import QtGui
+
+from stepanalyzer.gui.widgets.Main_Widget import Main_Widget
 
 
 class Main_GUI(QMainWindow):
@@ -10,12 +12,12 @@ class Main_GUI(QMainWindow):
         super().__init__()
 
     def setupUI(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
         self.setWindowTitle("Step Analyzer")
-        self.setGeometry(400, 50, 200, 200)
+
+        screen_geometry = QApplication.desktop().screenGeometry()
+        x = (screen_geometry.width() - self.width()) // 2
+        y = (screen_geometry.height() - self.height()) // 2
+        self.setGeometry(x,y, 0, 0)
 
         # Icon
         res_path = os.path.join(os.path.dirname(
@@ -25,8 +27,6 @@ class Main_GUI(QMainWindow):
 
         container = Main_Widget()
         self.setCentralWidget(container)
-        # self.setFocusPolicy(Qt.StrongFocus)
-        # self.setFocus()
 
         # Menu Bar
         self._menu_bar = self.menuBar()

@@ -1,9 +1,5 @@
 import os
 
-import pandas as pd
-import seaborn as sns
-from matplotlib import pyplot as plt
-
 from stepanalyzer.Algorithms.KinematicsFun import definition_step_cycle, calculate_number_time_steps, \
     calculate_average_height
 from stepanalyzer.Algorithms.ReadDataFile import read_params
@@ -83,5 +79,4 @@ if __name__ == "__main__":
     print(result_average_time_step)
     print(result_all_count_step)
     print(result_average_height)
-    #pd.DataFrame(result_csv_data, columns=data_csv_columns).to_csv("Result.csv")
-
+    # pd.DataFrame(result_csv_data, columns=data_csv_columns).to_csv("Result.csv")
