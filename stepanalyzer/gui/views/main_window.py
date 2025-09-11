@@ -1,31 +1,25 @@
 import os
 
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QApplication
-from PyQt5 import QtGui
+from PyQt5.QtWidgets import QMainWindow, QApplication
 
-from stepanalyzer.gui.widgets.Main_Widget import Main_Widget
+from stepanalyzer.gui.widgets.Menu_Widget import Menu_Widget
 
 
 class Main_GUI(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setupUI()
 
     def setupUI(self):
         self.setWindowTitle("Step Analyzer")
-
-        screen_geometry = QApplication.desktop().screenGeometry()
-        x = (screen_geometry.width() - self.width()) // 2
-        y = (screen_geometry.height() - self.height()) // 2
-        self.setGeometry(x,y, 0, 0)
-
         # Icon
         res_path = os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), "..", "resources")
+            os.path.abspath(__file__)), "..", "resources/icon")
         QApplication.instance().setWindowIcon(
-            QIcon(os.path.join(res_path, "logo.ico")))
+            QIcon(os.path.join(res_path, "logo.icon")))
 
-        container = Main_Widget()
+        container = Menu_Widget(self)
         self.setCentralWidget(container)
 
         # Menu Bar
