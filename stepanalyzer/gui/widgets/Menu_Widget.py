@@ -4,7 +4,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QLabel, QVBoxLayout
 
-from stepanalyzer.gui.widgets.Main_Widget import Main_Widget
+from stepanalyzer.gui.widgets.Open_Field_Widget import Open_Field_Widget
+from stepanalyzer.gui.widgets.Treadmill_Widget import Treadmill_Widget
 
 
 class Menu_Widget(QWidget):
@@ -23,10 +24,7 @@ class Menu_Widget(QWidget):
         self.setup_UI()
 
     def setup_UI(self):
-        super().__init__()
-
         self.set_icon_on_buttons()
-
         self.title.setText("Выберите тип теста для анализа")
         self.title.setFont(QFont('Arial', 15))
 
@@ -37,19 +35,22 @@ class Menu_Widget(QWidget):
         self.button_layout.addWidget(self.treadmill_button)
 
         self.treadmill_button.clicked.connect(self.open_treadmill_widget)
+        self.open_field_button.clicked.connect(self.open_open_field_widget)
         self.main_layout.setAlignment(Qt.AlignCenter)
         self.setLayout(self.main_layout)
 
-
     def set_icon_on_buttons(self):
-        self.open_field_button.setIcon(QIcon(os.path.join(self.res_path, "image_kinematics.png")))
+        self.open_field_button.setIcon(QIcon(os.path.join(self.res_path, "image_ladder_rung.png")))
         self.open_field_button.setIconSize(self.open_field_button.size())
 
-        self.treadmill_button.setIcon(QIcon(os.path.join(self.res_path, "image_ladder_rung.png")))
+        self.treadmill_button.setIcon(QIcon(os.path.join(self.res_path, "image_kinematics.png")))
         self.treadmill_button.setIconSize(self.treadmill_button.size())
 
     def open_treadmill_widget(self):
         self.deleteLater()
-        self.setup_UI()
+        self.frame.setCentralWidget(Treadmill_Widget(self.frame))
 
-        self.frame.setCentralWidget(Main_Widget())
+    def open_open_field_widget(self):
+        self.deleteLater()
+        self.frame.setCentralWidget(Open_Field_Widget(self.frame))
+

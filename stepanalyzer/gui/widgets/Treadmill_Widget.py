@@ -6,10 +6,9 @@ import numpy as np
 import pandas as pd
 from PyQt5.QtCore import Qt, pyqtSlot, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
-    QMessageBox, QSpinBox
+    QMessageBox, QSpinBox, QAction
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-
 from stepanalyzer.Algorithms.algorithm_for_steps import count_steps
 from stepanalyzer.image_processing.image_processor import show_frame
 
@@ -18,10 +17,11 @@ def moving_average(signal, window_size):
     return np.convolve(signal, np.ones(window_size) / window_size, mode='same')
 
 
-class Main_Widget(QWidget):
-    def __init__(self):
+class Treadmill_Widget(QWidget):
+    def __init__(self, window):
         super().__init__()
 
+        self.window = window
         self.name_video = None
         self.file_name_video = None
         self.video_loaded = False
@@ -81,6 +81,8 @@ class Main_Widget(QWidget):
         self.setLayout(self.main_layout)
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
+        self.add_menu_bar_functional()
+
         self.setup_UI_widget()
 
     def setup_UI_widget(self):
@@ -362,6 +364,8 @@ class Main_Widget(QWidget):
             self.video_cap.release()
         event.accept()
 
+
+
     def save_result_to_csv(self):
         try:
             # Open file dialog to select video
@@ -370,6 +374,24 @@ class Main_Widget(QWidget):
                 pd.DataFrame(self.result_csv_data, columns=self.data_csv_columns).to_csv(video_file)
         except Exception as e:
             self.show_error_message(f"Error saving CSV: {e}")
+
+    def add_menu_bar_functional(self):
+        open_video_file = QAction('Open Video', self)
+        open_video_file.triggered.connect(self.open_video)
+
+        open_csv_trajectory = QAction('Open CSV trajectory', self)
+        open_csv_trajectory.triggered.connect(self.load_csv_data_coordinate)
+
+        open_csv_angle = QAction('Open CSV angle', self)
+        open_csv_angle.triggered.connect(self.load_csv_angles)
+
+        self.window._file_menu.addAction(open_video_file)
+        self.window._file_menu.addAction(open_csv_trajectory)
+        self.window._file_menu.addAction(open_csv_angle)
+
+        return_main_panel = QAction('Main menu', self)
+        return_main_panel.triggered.connect(self.window.reopen_main_window)
+        self.window._edit_menu.addAction(return_main_panel)
 
     @pyqtSlot()
     def exit_clicked(self):
