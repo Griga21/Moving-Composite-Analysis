@@ -49,9 +49,6 @@ class Treadmill_Widget(QWidget):
             (128, 128, 0),  # Olive
         ]
 
-        self.open_video_button = QPushButton("Open Video")
-        self.open_csv_trajectory_button = QPushButton("Open CSV trajectory")
-        self.open_csv_button = QPushButton("Open CSV angels")
         self.next_button = QPushButton("Next")
         self.back_button = QPushButton("Back")
         self.apply_update_button = QPushButton("Apply Params")
@@ -88,10 +85,6 @@ class Treadmill_Widget(QWidget):
     def setup_UI_widget(self):
         self.image_label.setFixedSize(900, 900)
 
-        self.open_video_button.clicked.connect(self.open_video)
-        self.open_csv_trajectory_button.clicked.connect(self.load_csv_data_coordinate)
-        self.open_csv_button.clicked.connect(self.load_csv_angles)
-
         self.spinbox_step.setValue(15)
         self.spinbox_angle.setValue(15)
 
@@ -125,10 +118,6 @@ class Treadmill_Widget(QWidget):
 
         buttons_layout_for_change_frame.addWidget(self.back_button)
         buttons_layout_for_change_frame.addWidget(self.next_button)
-
-        buttons_layout_for_open_close_frame.addWidget(self.open_video_button)
-        buttons_layout_for_open_close_frame.addWidget(self.open_csv_trajectory_button)
-        buttons_layout_for_open_close_frame.addWidget(self.open_csv_button)
 
         buttons_layout_for_video.addLayout(buttons_layout_for_change_frame)
         buttons_layout_for_video.addWidget(self.label_count_frame)
