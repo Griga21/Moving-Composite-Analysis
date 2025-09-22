@@ -5,12 +5,13 @@ import cv2
 import numpy as np
 import pandas as pd
 from PyQt5.QtCore import Qt, pyqtSlot, QCoreApplication
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
+from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
     QMessageBox, QSpinBox, QAction, QMenu, QActionGroup
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from stepanalyzer.Algorithms.algorithm_for_steps import count_steps
+from stepanalyzer.gui.widgets.Abstract_Widget import Abstract_Widget
 from stepanalyzer.image_processing.image_processor import show_frame
 
 
@@ -18,22 +19,12 @@ def moving_average(signal, window_size):
     return np.convolve(signal, np.ones(window_size) / window_size, mode='same')
 
 
-class Open_Field_Widget(QWidget):
+class Open_Field_Widget(Abstract_Widget):
     def __init__(self, window):
         super().__init__()
 
         self.window = window
-        self.name_video = None
-        self.file_name_video = None
-        self.video_loaded = False
-        self.csv_data = pd.DataFrame()  # дата с траетория движния всех суставов
-        self.coordinates = {}  # координаты с траетория движния всех суставов
-        self.data_angels = []  # многомерный массив со всеми данными углов
-        self.data_angels_movmean = []  # array with step marks
-        self.result_csv_data = []  # все записи связанные заданными параметрами
-        self.local_result_data = []
-        self.video_cap = None
-        self.current_frame = 0
+
         self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance',
                                  'Angle Distance', 'Average Time', 'Average Distance', 'Average Angele']
         # Define colors for the dots (RGB format)
