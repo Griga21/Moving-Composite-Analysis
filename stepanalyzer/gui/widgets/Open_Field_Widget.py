@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PyQt5.QtCore import Qt, pyqtSlot, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
-    QMessageBox, QSpinBox, QAction
+    QMessageBox, QSpinBox, QAction, QMenu, QActionGroup
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -74,8 +74,10 @@ class Open_Field_Widget(QWidget):
         # Slider for frame navigation
         self._change_frame_slider = QSlider(Qt.Horizontal)
         self.spinbox_step = QSpinBox()
+        self.spinbox_step.setMinimum(0)
         self.spinbox_step.setMaximum(200)
         self.spinbox_angle = QSpinBox()
+        self.spinbox_angle.setMinimum(0)
         self.spinbox_step.setMaximum(200)
 
         # Label for slider
@@ -380,9 +382,35 @@ class Open_Field_Widget(QWidget):
         self.window._file_menu.addAction(open_video_file)
         self.window._file_menu.addAction(open_csv_trajectory)
 
+        analysis_method_sub_menu = QMenu('Choose Analysis Method', self)
+        method_group = QActionGroup(self)  # Group for radio buttons
+
+        manual_method = QAction('Manual', self, checkable=True)
+        manual_method.setActionGroup(method_group)
+        manual_method.triggered.connect(self.change_analysis_method_to_manual)
+        manual_method.setChecked(True)  # Default selected
+
+        auto_method = QAction('Automatic', self, checkable=True)
+        auto_method.setActionGroup(method_group)
+        auto_method.triggered.connect(self.change_analysis_method_to_auto)
+
+        analysis_method_sub_menu.addAction(manual_method)
+        analysis_method_sub_menu.addAction(auto_method)
+        self.window._edit_menu.addMenu(analysis_method_sub_menu)
+
         return_main_panel = QAction('Main menu', self)
         return_main_panel.triggered.connect(self.window.reopen_main_window)
         self.window._edit_menu.addAction(return_main_panel)
+
+    def change_analysis_method_to_manual(self):
+        self.apply_update_button.setEnabled(True)
+        self.spinbox_step.setEnabled(True)
+        self.spinbox_angle.setEnabled(True)
+
+    def change_analysis_method_to_auto(self):
+        self.apply_update_button.setEnabled(False)
+        self.spinbox_step.setEnabled(False)
+        self.spinbox_angle.setEnabled(False)
 
     def load_trajectory_from_csv(self):
         try:
