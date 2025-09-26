@@ -40,10 +40,6 @@ class Treadmill_Widget(Abstract_Widget):
             (128, 128, 0),  # Olive
         ]
 
-        self.next_button = QPushButton("Next")
-        self.back_button = QPushButton("Back")
-        self.apply_update_button = QPushButton("Apply Params")
-        self.save_to_csv_button = QPushButton("Add Result")
 
         # Widget for video
         self.image_label = QLabel()
@@ -54,7 +50,6 @@ class Treadmill_Widget(Abstract_Widget):
         self.ax = self.figure.add_subplot(111)
 
         # Slider for frame navigation
-        self._change_frame_slider = QSlider(Qt.Horizontal)
         self.spinbox_step = QSpinBox()
         self.spinbox_step.setMaximum(200)
         self.spinbox_angle = QSpinBox()
@@ -83,7 +78,7 @@ class Treadmill_Widget(Abstract_Widget):
         self.apply_update_button.setEnabled(False)
         self.next_button.setEnabled(False)
         self.back_button.setEnabled(False)
-        self.save_to_csv_button.setEnabled(False)
+        self.add_result_to_ram_button.setEnabled(False)
 
         self._change_frame_slider.sliderMoved.connect(self.slider_changed)
         self._change_frame_slider.setMinimum(0)
@@ -96,7 +91,7 @@ class Treadmill_Widget(Abstract_Widget):
         self.next_button.clicked.connect(self.slider_changed_by_button)
         self.back_button.clicked.connect(self.slider_changed_by_button_back)
         self.apply_update_button.clicked.connect(self.update_params)
-        self.save_to_csv_button.clicked.connect(self.save_result_to_csv)
+        self.add_result_to_ram_button.clicked.connect(self.save_result_to_csv)
 
         image_layout = QHBoxLayout()
         image_layout.addWidget(self.image_label)
@@ -122,7 +117,7 @@ class Treadmill_Widget(Abstract_Widget):
         buttons_for_change_params.addWidget(self.label_angle_distance)
         buttons_for_change_params.addWidget(self.spinbox_angle)
         buttons_for_change_params.addWidget(self.apply_update_button)
-        buttons_for_change_params.addWidget(self.save_to_csv_button)
+        buttons_for_change_params.addWidget(self.add_result_to_ram_button)
         main_buttons_for_change_params.addLayout(buttons_layout_for_open_close_frame)
         main_buttons_for_change_params.addLayout(buttons_for_change_params)
 
@@ -234,7 +229,7 @@ class Treadmill_Widget(Abstract_Widget):
                 self.file_name_video = csv_file
 
                 self.apply_update_button.setEnabled(True)
-                self.save_to_csv_button.setEnabled(True)
+                self.add_result_to_ram_button.setEnabled(True)
                 # Load CSV with pandas
 
                 data_init = np.loadtxt(os.path.join(

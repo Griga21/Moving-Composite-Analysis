@@ -1,5 +1,6 @@
 import pandas as pd
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QPushButton, QSlider
 
 
 class Abstract_Widget(QWidget):
@@ -16,3 +17,10 @@ class Abstract_Widget(QWidget):
         self.local_result_data = []
         self.video_cap = None
         self.current_frame = 0
+
+        self.next_button = QPushButton("Next")
+        self.back_button = QPushButton("Back")
+        self.apply_update_button = QPushButton("Apply Params")
+        self.add_result_to_ram_button = QPushButton("Add Result")
+
+        self._change_frame_slider = QSlider(Qt.Horizontal)

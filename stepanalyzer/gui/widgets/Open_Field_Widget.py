@@ -24,7 +24,6 @@ class Open_Field_Widget(Abstract_Widget):
         super().__init__()
 
         self.window = window
-
         self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance',
                                  'Angle Distance', 'Average Time', 'Average Distance', 'Average Angele']
         # Define colors for the dots (RGB format)
@@ -41,10 +40,6 @@ class Open_Field_Widget(Abstract_Widget):
             (128, 128, 0),  # Olive
         ]
 
-        self.next_button = QPushButton("Next")
-        self.back_button = QPushButton("Back")
-        self.apply_update_button = QPushButton("Apply Params")
-        self.add_result_to_ram_button = QPushButton("Add Result")
 
         # Widget for video
         self.image_label = QLabel()
@@ -63,7 +58,6 @@ class Open_Field_Widget(Abstract_Widget):
         self.dx.set_title('Back right paw')
 
         # Slider for frame navigation
-        self._change_frame_slider = QSlider(Qt.Horizontal)
         self.spinbox_step = QSpinBox()
         self.spinbox_step.setMinimum(0)
         self.spinbox_step.setMaximum(200)
