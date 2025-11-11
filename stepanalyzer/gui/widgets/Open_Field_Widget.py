@@ -1,18 +1,18 @@
-import os
 import uuid
 
 import cv2
 import numpy as np
 import pandas as pd
 from PyQt5.QtCore import Qt, pyqtSlot, QCoreApplication
-from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSlider, QFileDialog, \
+from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QHBoxLayout, QFileDialog, \
     QMessageBox, QSpinBox, QAction, QMenu, QActionGroup
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+from stepanalyzer.Algorithms.Open_Field_ALG import calculate_auto_step_result
 from stepanalyzer.Algorithms.algorithm_for_steps import count_steps
 from stepanalyzer.gui.widgets.Abstract_Widget import Abstract_Widget
-from stepanalyzer.image_processing.image_processor import show_frame
+from stepanalyzer.image_processing.image_processor import show_frame_open_field
 
 
 def moving_average(signal, window_size):
@@ -23,6 +23,7 @@ class Open_Field_Widget(Abstract_Widget):
     def __init__(self, window):
         super().__init__()
 
+        self.name_csv_file = None
         self.window = window
         self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance',
                                  'Angle Distance', 'Average Time', 'Average Distance', 'Average Angele']
@@ -40,7 +41,6 @@ class Open_Field_Widget(Abstract_Widget):
             (128, 128, 0),  # Olive
         ]
 
-
         # Widget for video
         self.image_label = QLabel()
 
@@ -56,6 +56,11 @@ class Open_Field_Widget(Abstract_Widget):
         self.bx.set_title('Front right paw')
         self.cx.set_title('Back left paw')
         self.dx.set_title('Back right paw')
+
+        self.vline_ax = None
+        self.vline_bx = None
+        self.vline_cx = None
+        self.vline_dx = None
 
         # Slider for frame navigation
         self.spinbox_step = QSpinBox()
@@ -165,30 +170,41 @@ class Open_Field_Widget(Abstract_Widget):
         self.update_content(self._change_frame_slider.value())
 
     def update_content(self, position):
+
+        if self.vline_ax is not None:
+            self.vline_ax.remove()
+            self.vline_bx.remove()
+            self.vline_cx.remove()
+            self.vline_dx.remove()
+
         # Обновляем график
-        self.ax.clear()
-        if position < 60:
-            x = np.linspace(0, 120, 120)
-            y = self.valid_data[0:120]
-            x1 = np.linspace(0, 120, 120)
-            y1 = self.data_angels_movmean[3][0:120]
 
-        elif position >= len(self.valid_data) - 120:
-            x = np.linspace(len(self.valid_data) - 121, len(self.valid_data) - 1, 120)
-            y = self.valid_data[len(self.valid_data) - 121:len(self.valid_data) - 1]
-            x1 = np.linspace(len(self.valid_data) - 121, len(self.valid_data) - 1, 120)
-            y1 = self.data_angels_movmean[3][len(self.valid_data) - 121:len(self.valid_data) - 1]
+        self.ax.set_title('Front left paw')
+        self.bx.set_title('Front right paw')
+        self.cx.set_title('Back left paw')
+        self.dx.set_title('Back right paw')
+
+        self.ax.plot()
+        self.bx.plot()
+        self.cx.plot()
+        self.dx.plot()
+
+        if position < 30:
+            self.ax.set_xlim(0, 60)
+            self.bx.set_xlim(0, 60)
+            self.cx.set_xlim(0, 60)
+            self.dx.set_xlim(0, 60)
         else:
-            x = np.linspace(position - 60, position + 60, 120)
-            y = self.valid_data[position - 60:position + 60]
-            x1 = np.linspace(position - 60, position + 60, 120)
-            y1 = self.data_angels_movmean[3][position - 60:position + 60]
+            self.ax.set_xlim(position - 30, position + 30)
+            self.bx.set_xlim(position - 30, position + 30)
+            self.cx.set_xlim(position - 30, position + 30)
+            self.dx.set_xlim(position - 30, position + 30)
 
-        self.ax.plot(x, y)
-        self.ax.plot(x1, y1)
-        self.ax.set_title(
-            f"График {self.file_name_video.split("/")[-2]} {self.file_name_video.split("_")[-2]} elbow_collarbone_paw")
-        self.ax.axvline(position, -200, 200, c="red", linestyle="--")
+        self.vline_ax = self.ax.axvline(position, -200, 200, c="red", linestyle="--")
+        self.vline_bx = self.bx.axvline(position, -200, 200, c="red", linestyle="--")
+        self.vline_cx = self.cx.axvline(position, -200, 200, c="red", linestyle="--")
+        self.vline_dx = self.dx.axvline(position, -200, 200, c="red", linestyle="--")
+
         self.canvas.draw()
 
     def open_video(self):
@@ -217,7 +233,7 @@ class Open_Field_Widget(Abstract_Widget):
                 self.video_width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                 self.video_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-                show_frame(self, 0)
+                show_frame_open_field(self, 0)
 
                 self.ax.clear()
                 self.canvas.draw()
@@ -228,93 +244,24 @@ class Open_Field_Widget(Abstract_Widget):
         except Exception as e:
             self.show_error_message(f"Error loading video: {e}")
 
-    def load_csv_angles(self):
-        try:
-            # Open file dialog to select CSV file
-            csv_file, _ = QFileDialog.getOpenFileName(
-                self, "Open CSV File", "", "CSV Files (*.csv)"
-            )
-            if csv_file:
-                self.file_name_video = csv_file
-
-                self.apply_update_button.setEnabled(True)
-                self.add_result_to_ram_button.setEnabled(True)
-                # Load CSV with pandas
-
-                data_init = np.loadtxt(os.path.join(
-                    csv_file),
-                    delimiter=',', dtype=str)
-                data = data_init[1:]
-                data = data.astype(np.float64)
-                for i in range(0, 4):
-                    column_data = data[0:, i]
-                    column_data = np.array(column_data)
-                    column_data = column_data.astype(np.float64)
-                    self.valid_data = column_data[~np.isnan(column_data)]
-                    # Remove NaN values for calculation
-                    self.valid_data = moving_average(self.valid_data, 5)
-                    if len(self.valid_data) < self._change_frame_slider.maximum():
-                        self._change_frame_slider.setMaximum(len(self.valid_data) - 1)
-                    self.data_angels.append(self.valid_data)
-                    self.data_angels_movmean.append(count_steps(self, self.valid_data))
-        except Exception as e:
-            self.show_error_message(f"Error loading CSV: {e}")
-
-    def load_csv_data_coordinate(self):
-        try:
-            # Open file dialog to select CSV file
-            csv_file, _ = QFileDialog.getOpenFileName(
-                self, "Open CSV File", "", "CSV Files (*.csv)"
-            )
-            if csv_file:
-                # Load CSV with pandas
-                temp_list = []
-                for i in range(19, 39):
-                    if i % 3 == 0:
-                        continue
-                    temp_list.append(i)
-                temp_list.append(0)
-                temp_list.sort()
-                self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
-
-                # Parse columns and identify pairs of x, y coordinates
-                self.coordinates = {}
-                columns = self.csv_data.columns
-
-                for i in range(1, len(columns), 2):  # Skip 'frame' column (0 index)
-                    if "x" in columns[i].lower() and "y" in columns[i + 1].lower():
-                        label = columns[i].lower().replace("_", "").replace("x", "").strip()
-                        self.coordinates[label] = (columns[i], columns[i + 1])
-        except Exception as e:
-            self.show_error_message(f"Error loading CSV: {e}")
-
     def slider_changed(self, position):
-        try:
-            # Display the frame corresponding to the slider's position
-            if self.video_loaded:
-                show_frame(self, position)
-                self.update_content(position)
-        except Exception as e:
-            self.show_error_message(f"Error displaying frame: {e}")
+        self.changed_frame(position)
 
     def slider_changed_by_button(self):
         position = self._change_frame_slider.value() + 1
         self._change_frame_slider.setValue(position)
-        try:
-            # Display the frame corresponding to the slider's position
-            if self.video_loaded:
-                show_frame(self, position)
-                self.update_content(position)
-        except Exception as e:
-            self.show_error_message(f"Error displaying frame: {e}")
+        self.changed_frame(position)
 
     def slider_changed_by_button_back(self):
         position = self._change_frame_slider.value() - 1
         self._change_frame_slider.setValue(position)
+        self.changed_frame(position)
+
+    def changed_frame(self, position):
         try:
             # Display the frame corresponding to the slider's position
             if self.video_loaded:
-                show_frame(self, position)
+                show_frame_open_field(self, position)
                 self.update_content(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
@@ -325,13 +272,13 @@ class Open_Field_Widget(Abstract_Widget):
             new_value = self._change_frame_slider.value() + 1
             if new_value <= self._change_frame_slider.maximum():
                 self._change_frame_slider.setValue(new_value)
-                show_frame(self, new_value)
+                show_frame_open_field(self, new_value)
                 self.update_content(new_value)
         elif event.key() == Qt.Key_Left:  # Left arrow key
             new_value = self._change_frame_slider.value() - 1
             if new_value >= self._change_frame_slider.minimum():
                 self._change_frame_slider.setValue(new_value)
-                show_frame(self, new_value)
+                show_frame_open_field(self, new_value)
                 self.update_content(new_value)
         else:
             super().keyPressEvent(event)
@@ -393,6 +340,7 @@ class Open_Field_Widget(Abstract_Widget):
         self.spinbox_angle.setEnabled(True)
 
     def change_analysis_method_to_auto(self):
+        calculate_auto_step_result(self.name_csv_file, [self.ax, self.bx, self.cx, self.dx, ])
         self.apply_update_button.setEnabled(False)
         self.spinbox_step.setEnabled(False)
         self.spinbox_angle.setEnabled(False)
@@ -404,9 +352,10 @@ class Open_Field_Widget(Abstract_Widget):
                 self, "Open CSV File", "", "CSV Files (*.csv)"
             )
             if csv_file:
+                self.name_csv_file = csv_file
                 # Load CSV with pandas
-                temp_list = ["leftforword_x", "leftforword_y", "rightforword_x", "rightforword_y",
-                             "midbody_x", "midbody_y", "leftback_x", "leftback_y", "rightback_x", "rightback_y", ]
+                temp_list = ["bodyparts", "leftforword_x", "leftforword_y", "rightforword_x", "rightforword_y",
+                             "midbody_x", "midbody_y", "leftback_x", "leftback_y", "rightback_x", "rightback_y"]
 
                 self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
 
@@ -414,50 +363,13 @@ class Open_Field_Widget(Abstract_Widget):
                 self.coordinates = {}
                 columns = self.csv_data.columns
 
-                for i in range(0, len(columns), 2):  # Skip 'frame' column (0 index)
+                for i in range(1, len(columns), 2):  # Skip 'frame' column (0 index)
                     if "x" in columns[i].lower() and "y" in columns[i + 1].lower():
                         label = columns[i].lower().replace("_", "").replace("x", "").strip()
                         self.coordinates[label] = (columns[i], columns[i + 1])
                 print(self.coordinates)
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
-
-    def open_vide(self):
-        try:
-            # Open file dialog to select video
-            video_file, _ = QFileDialog.getOpenFileName(
-                self, "Open Video File", "", "Video Files (*.mp4 *.avi *.mkv)"
-            )
-            if video_file:
-                self.name_video = video_file
-                self.local_result_data = []
-                self.video_cap = cv2.VideoCapture(video_file)
-                if not self.video_cap.isOpened():
-                    raise IOError("Could not open video file.")
-
-                self.next_button.setEnabled(True)
-                self.back_button.setEnabled(True)
-
-                self.video_loaded = True
-                self._change_frame_slider.setEnabled(True)
-                self._change_frame_slider.setMinimum(0)
-                self._change_frame_slider.setMaximum(int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT)) - 1)
-                self._change_frame_slider.setValue(0)
-
-                # Get video width and height for auto-resize
-                self.video_width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                self.video_height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-                show_frame(self, 0)
-
-                self.ax.clear()
-                self.canvas.draw()
-                self.valid_data = []
-                self.data_angels = []
-                self.data_angels_movmean = []
-
-        except Exception as e:
-            self.show_error_message(f"Error loading video: {e}")
 
     @pyqtSlot()
     def exit_clicked(self):

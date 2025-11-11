@@ -227,11 +227,10 @@ class Treadmill_Widget(Abstract_Widget):
             )
             if csv_file:
                 self.file_name_video = csv_file
-
                 self.apply_update_button.setEnabled(True)
                 self.add_result_to_ram_button.setEnabled(True)
-                # Load CSV with pandas
 
+                # Load CSV with pandas
                 data_init = np.loadtxt(os.path.join(
                     csv_file),
                     delimiter=',', dtype=str)
