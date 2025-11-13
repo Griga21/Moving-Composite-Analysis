@@ -65,10 +65,10 @@ class Open_Field_Widget(Abstract_Widget):
         # Slider for frame navigation
         self.spinbox_step = QSpinBox()
         self.spinbox_step.setMinimum(0)
-        self.spinbox_step.setMaximum(200)
+        self.spinbox_step.setMaximum(500)
         self.spinbox_angle = QSpinBox()
         self.spinbox_angle.setMinimum(0)
-        self.spinbox_step.setMaximum(200)
+        self.spinbox_angle.setMaximum(500)
 
         # Label for slider
         self.label_count_frame = QLabel()
@@ -150,35 +150,35 @@ class Open_Field_Widget(Abstract_Widget):
         self.label_angle_distance.setText(f'Angle Distance {self.spinbox_step.value()}')
 
     def update_params(self):
-        self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
-        self.label_angle_distance.setText(f'Angle Distance {self.spinbox_angle.value()}')
-        self.local_result_data = []
-        self.local_result_data.append(uuid.uuid4())
-        self.local_result_data.append(self.file_name_video.split("/")[-2])
-        self.local_result_data.append(self.file_name_video.split("_")[-2])
-        self.local_result_data.append(self.name_video.split("/")[-1])
-        self.local_result_data.append(self.spinbox_step.value())
-        self.local_result_data.append(self.spinbox_angle.value())
-        if bool(self.result_csv_data) and self.result_csv_data[-1][3] == self.local_result_data[3]:
-            self.result_csv_data.pop()
-        self.result_csv_data.append(self.local_result_data)
-
-        self.data_angels_movmean.pop()
-        self.data_angels_movmean.append(count_steps(self, self.valid_data))
+        # self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
+        # self.label_angle_distance.setText(f'Angle Distance {self.spinbox_angle.value()}')
+        # self.local_result_data = []
+        # self.local_result_data.append(uuid.uuid4())
+        # self.local_result_data.append(self.name_video.split("/")[-2])
+        # self.local_result_data.append(self.name_video.split("_")[-2])
+        # self.local_result_data.append(self.name_video.split("/")[-1])
+        # self.local_result_data.append(self.spinbox_step.value())
+        # self.local_result_data.append(self.spinbox_angle.value())
+        # if bool(self.result_csv_data) and self.result_csv_data[-1][3] == self.local_result_data[3]:
+        #     self.result_csv_data.pop()
+        # self.result_csv_data.append(self.local_result_data)
+        #
+        # self.data_angels_movmean.pop()
+        # self.data_angels_movmean.append(count_steps(self, self.valid_data))
 
         self.ax.clear()
+        self.bx.clear()
+        self.cx.clear()
+        self.dx.clear()
+        calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
         self.update_content(self._change_frame_slider.value())
 
     def update_content(self, position):
-
         if self.vline_ax is not None:
             self.vline_ax.remove()
             self.vline_bx.remove()
             self.vline_cx.remove()
             self.vline_dx.remove()
-
-        # Обновляем график
-
         self.ax.set_title('Front left paw')
         self.bx.set_title('Front right paw')
         self.cx.set_title('Back left paw')
@@ -204,7 +204,6 @@ class Open_Field_Widget(Abstract_Widget):
         self.vline_bx = self.bx.axvline(position, -200, 200, c="red", linestyle="--")
         self.vline_cx = self.cx.axvline(position, -200, 200, c="red", linestyle="--")
         self.vline_dx = self.dx.axvline(position, -200, 200, c="red", linestyle="--")
-
         self.canvas.draw()
 
     def open_video(self):
@@ -335,12 +334,15 @@ class Open_Field_Widget(Abstract_Widget):
         self.window._edit_menu.addAction(return_main_panel)
 
     def change_analysis_method_to_manual(self):
+        self.check_auto_mode = False
+        calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx, ], self.check_auto_mode)
         self.apply_update_button.setEnabled(True)
         self.spinbox_step.setEnabled(True)
         self.spinbox_angle.setEnabled(True)
 
     def change_analysis_method_to_auto(self):
-        calculate_auto_step_result(self.name_csv_file, [self.ax, self.bx, self.cx, self.dx, ])
+        self.check_auto_mode = True
+        calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx, ], self.check_auto_mode)
         self.apply_update_button.setEnabled(False)
         self.spinbox_step.setEnabled(False)
         self.spinbox_angle.setEnabled(False)
@@ -358,6 +360,7 @@ class Open_Field_Widget(Abstract_Widget):
                              "midbody_x", "midbody_y", "leftback_x", "leftback_y", "rightback_x", "rightback_y"]
 
                 self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
+                calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx, ], self.check_auto_mode)
 
                 # Parse columns and identify pairs of x, y coordinates
                 self.coordinates = {}
@@ -370,6 +373,9 @@ class Open_Field_Widget(Abstract_Widget):
                 print(self.coordinates)
         except Exception as e:
             self.show_error_message(f"Error loading CSV: {e}")
+        self.add_result_to_ram_button.setEnabled(True)
+        self.apply_update_button.setEnabled(True)
+        self.update_content(0)
 
     @pyqtSlot()
     def exit_clicked(self):

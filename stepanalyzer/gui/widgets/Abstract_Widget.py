@@ -17,6 +17,7 @@ class Abstract_Widget(QWidget):
         self.local_result_data = []
         self.video_cap = None
         self.current_frame = 0
+        self.check_auto_mode = False
 
         self.next_button = QPushButton("Next")
         self.back_button = QPushButton("Back")
