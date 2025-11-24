@@ -19,9 +19,9 @@ class Abstract_Widget(QWidget):
         self.current_frame = 0
         self.check_auto_mode = False
 
-        self.next_button = QPushButton("Next")
-        self.back_button = QPushButton("Back")
-        self.apply_update_button = QPushButton("Apply Params")
-        self.add_result_to_ram_button = QPushButton("Add Result")
+        self.next_button = QPushButton("Вперед")
+        self.back_button = QPushButton("Назад")
+        self.apply_update_button = QPushButton("Применить параметры")
+        self.add_result_to_ram_button = QPushButton("Добавить результат")
 
         self._change_frame_slider = QSlider(Qt.Horizontal)

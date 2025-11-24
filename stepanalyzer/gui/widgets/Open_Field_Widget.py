@@ -9,8 +9,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QHBoxLayout, QFil
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from stepanalyzer.Algorithms.Open_Field_ALG import calculate_auto_step_result
-from stepanalyzer.Algorithms.algorithm_for_steps import count_steps
+from stepanalyzer.Algorithms.Open_Field_ALG import calculate_step_result
 from stepanalyzer.gui.widgets.Abstract_Widget import Abstract_Widget
 from stepanalyzer.image_processing.image_processor import show_frame_open_field
 
@@ -25,8 +24,9 @@ class Open_Field_Widget(Abstract_Widget):
 
         self.name_csv_file = None
         self.window = window
-        self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video', 'Step Distance',
-                                 'Angle Distance', 'Average Time', 'Average Distance', 'Average Angele']
+        self.data_csv_columns = ['id', 'Group', 'Number Rat', 'Name video']
+        self.results_df = None
+        self.stat_tabl = []
         # Define colors for the dots (RGB format)
         self.colors = [
             (255, 0, 0),  # Red
@@ -52,10 +52,7 @@ class Open_Field_Widget(Abstract_Widget):
         self.bx = self.figure.add_subplot(412)
         self.cx = self.figure.add_subplot(413)
         self.dx = self.figure.add_subplot(414)
-        self.ax.set_title('Front left paw')
-        self.bx.set_title('Front right paw')
-        self.cx.set_title('Back left paw')
-        self.dx.set_title('Back right paw')
+        self.set_title_axs()
 
         self.vline_ax = None
         self.vline_bx = None
@@ -63,12 +60,15 @@ class Open_Field_Widget(Abstract_Widget):
         self.vline_dx = None
 
         # Slider for frame navigation
-        self.spinbox_step = QSpinBox()
-        self.spinbox_step.setMinimum(0)
-        self.spinbox_step.setMaximum(500)
-        self.spinbox_angle = QSpinBox()
-        self.spinbox_angle.setMinimum(0)
-        self.spinbox_angle.setMaximum(500)
+        self.speed_change = QSpinBox()
+        self.speed_change.setMinimum(0)
+        self.speed_change.setMaximum(1000)
+        self.travel_time_min = QSpinBox()
+        self.travel_time_min.setMinimum(0)
+        self.travel_time_min.setMaximum(1000)
+        self.travel_time_max = QSpinBox()
+        self.travel_time_max.setMinimum(0)
+        self.travel_time_max.setMaximum(1000)
 
         # Label for slider
         self.label_count_frame = QLabel()
@@ -85,8 +85,9 @@ class Open_Field_Widget(Abstract_Widget):
     def setup_UI_widget(self):
         self.image_label.setFixedSize(900, 900)
 
-        self.spinbox_step.setValue(15)
-        self.spinbox_angle.setValue(15)
+        self.speed_change.setValue(15)
+        self.travel_time_min.setValue(15)
+        self.travel_time_max.setValue(100)
 
         self._change_frame_slider.setEnabled(False)
         self.apply_update_button.setEnabled(False)
@@ -105,7 +106,7 @@ class Open_Field_Widget(Abstract_Widget):
         self.next_button.clicked.connect(self.slider_changed_by_button)
         self.back_button.clicked.connect(self.slider_changed_by_button_back)
         self.apply_update_button.clicked.connect(self.update_params)
-        self.add_result_to_ram_button.clicked.connect(self.save_result_to_csv)
+        self.add_result_to_ram_button.clicked.connect(self.add_RAM_result)
 
         image_layout = QHBoxLayout()
         image_layout.addWidget(self.image_label)
@@ -127,9 +128,10 @@ class Open_Field_Widget(Abstract_Widget):
         buttons_for_change_params = QHBoxLayout()
 
         buttons_for_change_params.addWidget(self.label_step_distance)
-        buttons_for_change_params.addWidget(self.spinbox_step)
+        buttons_for_change_params.addWidget(self.speed_change)
         buttons_for_change_params.addWidget(self.label_angle_distance)
-        buttons_for_change_params.addWidget(self.spinbox_angle)
+        buttons_for_change_params.addWidget(self.travel_time_min)
+        buttons_for_change_params.addWidget(self.travel_time_max)
         buttons_for_change_params.addWidget(self.apply_update_button)
         buttons_for_change_params.addWidget(self.add_result_to_ram_button)
         main_buttons_for_change_params.addLayout(buttons_layout_for_open_close_frame)
@@ -145,33 +147,20 @@ class Open_Field_Widget(Abstract_Widget):
 
         self.main_layout.addLayout(main_widget_layout)
 
-        self.label_count_frame.setText('Number Frame')
-        self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
-        self.label_angle_distance.setText(f'Angle Distance {self.spinbox_step.value()}')
+        self.label_count_frame.setText('Номер кадра')
+        self.label_step_distance.setText(f'Изменение скорости {self.speed_change.value()}')
+        self.label_angle_distance.setText(f'Интервал передвижения {self.travel_time_min.value()} - {self.travel_time_max.value()}')
 
-    def update_params(self):
-        # self.label_step_distance.setText(f'Step Distance {self.spinbox_step.value()}')
-        # self.label_angle_distance.setText(f'Angle Distance {self.spinbox_angle.value()}')
-        # self.local_result_data = []
-        # self.local_result_data.append(uuid.uuid4())
-        # self.local_result_data.append(self.name_video.split("/")[-2])
-        # self.local_result_data.append(self.name_video.split("_")[-2])
-        # self.local_result_data.append(self.name_video.split("/")[-1])
-        # self.local_result_data.append(self.spinbox_step.value())
-        # self.local_result_data.append(self.spinbox_angle.value())
-        # if bool(self.result_csv_data) and self.result_csv_data[-1][3] == self.local_result_data[3]:
-        #     self.result_csv_data.pop()
-        # self.result_csv_data.append(self.local_result_data)
-        #
-        # self.data_angels_movmean.pop()
-        # self.data_angels_movmean.append(count_steps(self, self.valid_data))
+    def add_RAM_result(self):
+        self.local_result_data = []
+        self.local_result_data.append(uuid.uuid4())
+        self.local_result_data.append(self.name_video.split("/")[-2])
+        self.local_result_data.append(self.name_video.split("_")[-2])
+        self.local_result_data.append(self.name_video.split("/")[-1])
+        for i in range(0,32):
+            self.local_result_data.append(self.stat_tabl[i])
 
-        self.ax.clear()
-        self.bx.clear()
-        self.cx.clear()
-        self.dx.clear()
-        calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
-        self.update_content(self._change_frame_slider.value())
+        self.result_csv_data.append(self.local_result_data)
 
     def update_content(self, position):
         if self.vline_ax is not None:
@@ -179,10 +168,7 @@ class Open_Field_Widget(Abstract_Widget):
             self.vline_bx.remove()
             self.vline_cx.remove()
             self.vline_dx.remove()
-        self.ax.set_title('Front left paw')
-        self.bx.set_title('Front right paw')
-        self.cx.set_title('Back left paw')
-        self.dx.set_title('Back right paw')
+        self.set_title_axs()
 
         self.ax.plot()
         self.bx.plot()
@@ -234,7 +220,8 @@ class Open_Field_Widget(Abstract_Widget):
 
                 show_frame_open_field(self, 0)
 
-                self.ax.clear()
+                self.clear_axs()
+                self.set_title_axs()
                 self.canvas.draw()
                 self.valid_data = []
                 self.data_angels = []
@@ -295,33 +282,42 @@ class Open_Field_Widget(Abstract_Widget):
         event.accept()
 
     def save_result_to_csv(self):
+        metrics = ['Median stride time', 'Mean stride time', 'Kvar stride time', 'Frac stride time',
+                   'Median stride intl', 'Mean stride intl', 'Kvar stride intl', 'Frac stride intl']
         try:
-            # Open file dialog to select video
-            video_file, _ = QFileDialog.getSaveFileName(self, "Save CSV File", "", "CSV Files (*.csv)")
-            if video_file:
-                pd.DataFrame(self.result_csv_data, columns=self.data_csv_columns).to_csv(video_file)
+            file, _ = QFileDialog.getSaveFileName(self, "Save CSV File", "", "CSV Files (*.csv)")
+            if file:
+                for i in range(4):  # Для каждой лапы
+                    for metric in metrics:
+                        self.data_csv_columns.append(f'Paw_{i + 1}_{metric}')
+                pd.DataFrame(self.result_csv_data, columns=self.data_csv_columns).to_csv(file)
+            print("Анализ завершен. Результаты сохранены в movement_analysis_results.csv")
         except Exception as e:
-            self.show_error_message(f"Error saving CSV: {e}")
+            print(f"Ошибка при сохранении результатов: {e}")
 
     def add_menu_bar_functional(self):
-        open_video_file = QAction('Open Video', self)
-        open_video_file.triggered.connect(self.open_video)
+        bar_open_video_file = QAction('Открыть видео', self)
+        bar_open_video_file.triggered.connect(self.open_video)
 
-        open_csv_trajectory = QAction('Open CSV trajectory', self)
-        open_csv_trajectory.triggered.connect(self.load_trajectory_from_csv)
+        bar_open_csv_trajectory = QAction('Открыть CSV траектории', self)
+        bar_open_csv_trajectory.triggered.connect(self.load_trajectory_from_csv)
 
-        self.window._file_menu.addAction(open_video_file)
-        self.window._file_menu.addAction(open_csv_trajectory)
+        bar_save_result_to_csv = QAction('Сохранить результаты', self)
+        bar_save_result_to_csv.triggered.connect(self.save_result_to_csv)
 
-        analysis_method_sub_menu = QMenu('Choose Analysis Method', self)
+        self.window._file_menu.addAction(bar_open_video_file)
+        self.window._file_menu.addAction(bar_open_csv_trajectory)
+        self.window._file_menu.addAction(bar_save_result_to_csv)
+
+        analysis_method_sub_menu = QMenu('Метод анализа', self)
         method_group = QActionGroup(self)  # Group for radio buttons
 
-        manual_method = QAction('Manual', self, checkable=True)
+        manual_method = QAction('Ручной', self, checkable=True)
         manual_method.setActionGroup(method_group)
         manual_method.triggered.connect(self.change_analysis_method_to_manual)
         manual_method.setChecked(True)  # Default selected
 
-        auto_method = QAction('Automatic', self, checkable=True)
+        auto_method = QAction('Автоматический', self, checkable=True)
         auto_method.setActionGroup(method_group)
         auto_method.triggered.connect(self.change_analysis_method_to_auto)
 
@@ -329,23 +325,25 @@ class Open_Field_Widget(Abstract_Widget):
         analysis_method_sub_menu.addAction(auto_method)
         self.window._edit_menu.addMenu(analysis_method_sub_menu)
 
-        return_main_panel = QAction('Main menu', self)
+        return_main_panel = QAction('Главное меню', self)
         return_main_panel.triggered.connect(self.window.reopen_main_window)
         self.window._edit_menu.addAction(return_main_panel)
 
     def change_analysis_method_to_manual(self):
         self.check_auto_mode = False
-        calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx, ], self.check_auto_mode)
+        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
         self.apply_update_button.setEnabled(True)
-        self.spinbox_step.setEnabled(True)
-        self.spinbox_angle.setEnabled(True)
+        self.speed_change.setEnabled(True)
+        self.travel_time_min.setEnabled(True)
+        self.travel_time_max.setEnabled(True)
 
     def change_analysis_method_to_auto(self):
         self.check_auto_mode = True
-        calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx, ], self.check_auto_mode)
+        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
         self.apply_update_button.setEnabled(False)
-        self.spinbox_step.setEnabled(False)
-        self.spinbox_angle.setEnabled(False)
+        self.speed_change.setEnabled(False)
+        self.travel_time_min.setEnabled(False)
+        self.travel_time_max.setEnabled(False)
 
     def load_trajectory_from_csv(self):
         try:
@@ -356,11 +354,10 @@ class Open_Field_Widget(Abstract_Widget):
             if csv_file:
                 self.name_csv_file = csv_file
                 # Load CSV with pandas
-                temp_list = ["bodyparts", "leftforword_x", "leftforword_y", "rightforword_x", "rightforword_y",
+                temp_list = ["coords", "leftforword_x", "leftforword_y", "rightforword_x", "rightforword_y",
                              "midbody_x", "midbody_y", "leftback_x", "leftback_y", "rightback_x", "rightback_y"]
 
                 self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
-                calculate_auto_step_result(self, [self.ax, self.bx, self.cx, self.dx, ], self.check_auto_mode)
 
                 # Parse columns and identify pairs of x, y coordinates
                 self.coordinates = {}
@@ -384,3 +381,23 @@ class Open_Field_Widget(Abstract_Widget):
         self.destroy(True, True)
         QApplication.closeAllWindows()
         QCoreApplication.instance().quit()
+
+    def update_params(self):
+        self.label_step_distance.setText(f'Изменение скорости {self.speed_change.value()}')
+        self.label_angle_distance.setText(f'Интервал передвижения {self.travel_time_min.value()} '
+                                              f'- {self.travel_time_max.value()}')
+        self.clear_axs()
+        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
+        self.update_content(self._change_frame_slider.value())
+
+    def set_title_axs(self):
+        self.ax.set_title('Передняя левая лапа')
+        self.bx.set_title('Передняя правая лапа')
+        self.cx.set_title('Задняя левая лапа')
+        self.dx.set_title('Задняя правая лапа')
+
+    def clear_axs(self):
+        self.ax.clear()
+        self.bx.clear()
+        self.cx.clear()
+        self.dx.clear()

@@ -10,9 +10,9 @@ class Main_GUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self._menu_bar = self.menuBar()
-        self._file_menu = QMenu('File', self)
-        self._edit_menu = QMenu('Edit', self)
-        self._help_menu = QMenu('Help', self)
+        self._file_menu = QMenu('Файл', self)
+        self._edit_menu = QMenu('Изменить', self)
+        self._help_menu = QMenu('Помощь', self)
         self.setupUI()
 
     def setupUI(self):
