@@ -604,7 +604,8 @@ def manual_calculate_result(self, data_init):
             prev_max = False
             start_step = True
         elif (peaks_list[i] in peaks_max and start_step
-              and abs(temp_peaks_result[-1] - peaks_list[i]) < self.speed_change.value()):
+              and abs(temp_peaks_result[-1] - peaks_list[i]) < self.speed_change_max.value()) and abs(
+            temp_peaks_result[-1] - peaks_list[i]) > self.speed_change_min.value():
             temp_peaks_result.append(peaks_list[i])
             prev_max = True
         elif peaks_list[i] in peaks_min and prev_max:

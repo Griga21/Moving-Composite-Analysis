@@ -89,8 +89,8 @@ def show_frame_open_field(self, frame_number):
             cv2.putText(frame, title, (0, 30), font, font_scale, color, thickness, cv2.LINE_AA)
 
             # If CSV data is available, plot the dots and connect them
-            if not self.csv_data.empty and frame_number in self.csv_data['coords'].values:
-                row_data = self.csv_data[self.csv_data['coords'] == frame_number]
+            if not self.csv_data.empty and frame_number in self.csv_data['bodyparts'].values:
+                row_data = self.csv_data[self.csv_data['bodyparts'] == frame_number]
 
                 # List of points to connect with lines (order: crest -> hip -> knee -> ankle -> mtp -> toe)
                 key_points = ["leftforword",  "rightforword",

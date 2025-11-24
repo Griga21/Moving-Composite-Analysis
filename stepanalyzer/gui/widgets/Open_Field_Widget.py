@@ -60,9 +60,12 @@ class Open_Field_Widget(Abstract_Widget):
         self.vline_dx = None
 
         # Slider for frame navigation
-        self.speed_change = QSpinBox()
-        self.speed_change.setMinimum(0)
-        self.speed_change.setMaximum(1000)
+        self.speed_change_min = QSpinBox()
+        self.speed_change_min.setMinimum(0)
+        self.speed_change_min.setMaximum(1000)
+        self.speed_change_max = QSpinBox()
+        self.speed_change_max.setMinimum(0)
+        self.speed_change_max.setMaximum(1000)
         self.travel_time_min = QSpinBox()
         self.travel_time_min.setMinimum(0)
         self.travel_time_min.setMaximum(1000)
@@ -85,9 +88,10 @@ class Open_Field_Widget(Abstract_Widget):
     def setup_UI_widget(self):
         self.image_label.setFixedSize(900, 900)
 
-        self.speed_change.setValue(15)
+        self.speed_change_min.setValue(15)
+        self.speed_change_max.setValue(50)
         self.travel_time_min.setValue(15)
-        self.travel_time_max.setValue(100)
+        self.travel_time_max.setValue(50)
 
         self._change_frame_slider.setEnabled(False)
         self.apply_update_button.setEnabled(False)
@@ -128,7 +132,8 @@ class Open_Field_Widget(Abstract_Widget):
         buttons_for_change_params = QHBoxLayout()
 
         buttons_for_change_params.addWidget(self.label_step_distance)
-        buttons_for_change_params.addWidget(self.speed_change)
+        buttons_for_change_params.addWidget(self.speed_change_min)
+        buttons_for_change_params.addWidget(self.speed_change_max)
         buttons_for_change_params.addWidget(self.label_angle_distance)
         buttons_for_change_params.addWidget(self.travel_time_min)
         buttons_for_change_params.addWidget(self.travel_time_max)
@@ -148,8 +153,9 @@ class Open_Field_Widget(Abstract_Widget):
         self.main_layout.addLayout(main_widget_layout)
 
         self.label_count_frame.setText('Номер кадра')
-        self.label_step_distance.setText(f'Изменение скорости {self.speed_change.value()}')
-        self.label_angle_distance.setText(f'Интервал передвижения {self.travel_time_min.value()} - {self.travel_time_max.value()}')
+        self.label_step_distance.setText(f'Изменение скорости {self.speed_change_min.value()} - {self.speed_change_max.value()}')
+        self.label_angle_distance.setText(
+            f'Интервал передвижения {self.travel_time_min.value()} - {self.travel_time_max.value()}')
 
     def add_RAM_result(self):
         self.local_result_data = []
@@ -157,7 +163,7 @@ class Open_Field_Widget(Abstract_Widget):
         self.local_result_data.append(self.name_video.split("/")[-2])
         self.local_result_data.append(self.name_video.split("_")[-2])
         self.local_result_data.append(self.name_video.split("/")[-1])
-        for i in range(0,32):
+        for i in range(0, 32):
             self.local_result_data.append(self.stat_tabl[i])
 
         self.result_csv_data.append(self.local_result_data)
@@ -331,6 +337,7 @@ class Open_Field_Widget(Abstract_Widget):
 
     def change_analysis_method_to_manual(self):
         self.check_auto_mode = False
+        self.clear_axs()
         self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
         self.apply_update_button.setEnabled(True)
         self.speed_change.setEnabled(True)
@@ -339,6 +346,7 @@ class Open_Field_Widget(Abstract_Widget):
 
     def change_analysis_method_to_auto(self):
         self.check_auto_mode = True
+        self.clear_axs()
         self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
         self.apply_update_button.setEnabled(False)
         self.speed_change.setEnabled(False)
@@ -354,7 +362,7 @@ class Open_Field_Widget(Abstract_Widget):
             if csv_file:
                 self.name_csv_file = csv_file
                 # Load CSV with pandas
-                temp_list = ["coords", "leftforword_x", "leftforword_y", "rightforword_x", "rightforword_y",
+                temp_list = ["bodyparts", "leftforword_x", "leftforword_y", "rightforword_x", "rightforword_y",
                              "midbody_x", "midbody_y", "leftback_x", "leftback_y", "rightback_x", "rightback_y"]
 
                 self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
@@ -383,9 +391,9 @@ class Open_Field_Widget(Abstract_Widget):
         QCoreApplication.instance().quit()
 
     def update_params(self):
-        self.label_step_distance.setText(f'Изменение скорости {self.speed_change.value()}')
+        self.label_step_distance.setText(f'Изменение скорости {self.speed_change_min.value()} - {self.speed_change_max.value()}')
         self.label_angle_distance.setText(f'Интервал передвижения {self.travel_time_min.value()} '
-                                              f'- {self.travel_time_max.value()}')
+                                          f'- {self.travel_time_max.value()}')
         self.clear_axs()
         self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
         self.update_content(self._change_frame_slider.value())
