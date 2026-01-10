@@ -94,7 +94,7 @@ def show_frame_open_field(self, frame_number):
 
                 # List of points to connect with lines (order: crest -> hip -> knee -> ankle -> mtp -> toe)
                 key_points = ["leftforword",  "rightforword",
-                             "midbody", "leftback", "rightback"]
+                             "midbody", "leftknee", "leftback", "rightknee","rightback"]
                 points = []
 
                 for index, (label, (x_col, y_col)) in enumerate(self.coordinates.items()):
@@ -105,12 +105,12 @@ def show_frame_open_field(self, frame_number):
 
                         # Draw the dot (adjust for OpenCV's coordinate system)
                         color = self.colors[index % len(self.colors)]
-                        cv2.circle(frame, (x, y), 10, color, -1)
+                        cv2.circle(frame, (x, y), 6, color, -1)
 
                         # Draw the label text next to the dot
                         label_x = x + 10  # Offset the label slightly
                         label_y = y - 10
-                        cv2.putText(frame, label, (label_x, label_y), font, 0.7, color, 2)
+                        cv2.putText(frame, label, (label_x, label_y), font, 0.6, color, 2)
 
                 # Connect the points with lines
                 for i in range(len(points) - 1):

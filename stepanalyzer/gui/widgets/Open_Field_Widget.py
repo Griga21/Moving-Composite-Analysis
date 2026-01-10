@@ -48,16 +48,20 @@ class Open_Field_Widget(Abstract_Widget):
         self.figure = Figure(figsize=(4, 3), dpi=80)
         self.figure.subplots_adjust(hspace=0.5)
         self.canvas = FigureCanvas(self.figure)
-        self.ax = self.figure.add_subplot(411)
-        self.bx = self.figure.add_subplot(412)
-        self.cx = self.figure.add_subplot(413)
-        self.dx = self.figure.add_subplot(414)
+        self.ax = self.figure.add_subplot(321)
+        self.bx = self.figure.add_subplot(322)
+        self.cx = self.figure.add_subplot(323)
+        self.dx = self.figure.add_subplot(324)
+        self.ex = self.figure.add_subplot(325)
+        self.fx = self.figure.add_subplot(326)
         self.set_title_axs()
 
         self.vline_ax = None
         self.vline_bx = None
         self.vline_cx = None
         self.vline_dx = None
+        self.vline_ex = None
+        self.vline_fx = None
 
         # Slider for frame navigation
         self.speed_change_min = QSpinBox()
@@ -153,15 +157,26 @@ class Open_Field_Widget(Abstract_Widget):
         self.main_layout.addLayout(main_widget_layout)
 
         self.label_count_frame.setText('Номер кадра')
-        self.label_step_distance.setText(f'Изменение скорости {self.speed_change_min.value()} - {self.speed_change_max.value()}')
+        self.label_step_distance.setText(
+            f'Изменение скорости {self.speed_change_min.value()} - {self.speed_change_max.value()}')
         self.label_angle_distance.setText(
             f'Интервал передвижения {self.travel_time_min.value()} - {self.travel_time_max.value()}')
 
     def add_RAM_result(self):
         self.local_result_data = []
         self.local_result_data.append(uuid.uuid4())
-        self.local_result_data.append(self.name_video.split("/")[-2])
-        self.local_result_data.append(self.name_video.split("_")[-2])
+        strl = self.name_csv_file.split("/")[-1]
+
+        strl = strl.split(".")[0]
+        if len(strl.split("_")) <= 3:
+            self.local_result_data.append(strl.split("_")[0])
+            self.local_result_data.append(strl.split("_")[-1])
+        elif len(strl.split("_")) <= 4:
+            self.local_result_data.append(f'{strl.split("_")[0]}_{strl.split("_")[1]}')
+            self.local_result_data.append({strl.split("_")[-1]})
+        else:
+            self.local_result_data.append(f'{strl.split("_")[0]}_{strl.split("_")[1]}_{strl.split("_")[2]}')
+            self.local_result_data.append({strl.split("_")[-1]})
         self.local_result_data.append(self.name_video.split("/")[-1])
         for i in range(0, 32):
             self.local_result_data.append(self.stat_tabl[i])
@@ -174,28 +189,38 @@ class Open_Field_Widget(Abstract_Widget):
             self.vline_bx.remove()
             self.vline_cx.remove()
             self.vline_dx.remove()
+            self.vline_ex.remove()
+            self.vline_fx.remove()
         self.set_title_axs()
 
         self.ax.plot()
         self.bx.plot()
         self.cx.plot()
         self.dx.plot()
+        self.ex.plot()
+        self.fx.plot()
 
         if position < 30:
             self.ax.set_xlim(0, 60)
             self.bx.set_xlim(0, 60)
             self.cx.set_xlim(0, 60)
             self.dx.set_xlim(0, 60)
+            self.ex.set_xlim(0, 60)
+            self.fx.set_xlim(0, 60)
         else:
             self.ax.set_xlim(position - 30, position + 30)
             self.bx.set_xlim(position - 30, position + 30)
             self.cx.set_xlim(position - 30, position + 30)
             self.dx.set_xlim(position - 30, position + 30)
+            self.ex.set_xlim(position - 30, position + 30)
+            self.fx.set_xlim(position - 30, position + 30)
 
         self.vline_ax = self.ax.axvline(position, -200, 200, c="red", linestyle="--")
         self.vline_bx = self.bx.axvline(position, -200, 200, c="red", linestyle="--")
         self.vline_cx = self.cx.axvline(position, -200, 200, c="red", linestyle="--")
         self.vline_dx = self.dx.axvline(position, -200, 200, c="red", linestyle="--")
+        self.vline_ex = self.ex.axvline(position, -200, 200, c="red", linestyle="--")
+        self.vline_fx = self.fx.axvline(position, -200, 200, c="red", linestyle="--")
         self.canvas.draw()
 
     def open_video(self):
@@ -338,18 +363,24 @@ class Open_Field_Widget(Abstract_Widget):
     def change_analysis_method_to_manual(self):
         self.check_auto_mode = False
         self.clear_axs()
-        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
+        self.stat_tabl = []
+        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx, self.ex, self.fx],
+                                               self.check_auto_mode)
         self.apply_update_button.setEnabled(True)
-        self.speed_change.setEnabled(True)
+        self.speed_change_min.setEnabled(True)
+        self.speed_change_max.setEnabled(True)
         self.travel_time_min.setEnabled(True)
         self.travel_time_max.setEnabled(True)
 
     def change_analysis_method_to_auto(self):
         self.check_auto_mode = True
         self.clear_axs()
-        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
+        self.stat_tabl = []
+        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx, self.ex, self.fx],
+                                               self.check_auto_mode)
         self.apply_update_button.setEnabled(False)
-        self.speed_change.setEnabled(False)
+        self.speed_change_min.setEnabled(False)
+        self.speed_change_max.setEnabled(False)
         self.travel_time_min.setEnabled(False)
         self.travel_time_max.setEnabled(False)
 
@@ -362,8 +393,13 @@ class Open_Field_Widget(Abstract_Widget):
             if csv_file:
                 self.name_csv_file = csv_file
                 # Load CSV with pandas
-                temp_list = ["bodyparts", "leftforword_x", "leftforword_y", "rightforword_x", "rightforword_y",
-                             "midbody_x", "midbody_y", "leftback_x", "leftback_y", "rightback_x", "rightback_y"]
+                temp_list = ["bodyparts", "leftforword_x", "leftforword_y",
+                             "rightforword_x", "rightforword_y",
+                             "midbody_x", "midbody_y",
+                             "leftback_x", "leftback_y",
+                             "leftknee_x", "leftknee_y",
+                             "rightback_x", "rightback_y",
+                             "rightknee_x", "rightknee_y"]
 
                 self.csv_data = pd.read_csv(csv_file, usecols=temp_list)
 
@@ -391,11 +427,13 @@ class Open_Field_Widget(Abstract_Widget):
         QCoreApplication.instance().quit()
 
     def update_params(self):
-        self.label_step_distance.setText(f'Изменение скорости {self.speed_change_min.value()} - {self.speed_change_max.value()}')
+        self.label_step_distance.setText(
+            f'Изменение скорости {self.speed_change_min.value()} - {self.speed_change_max.value()}')
         self.label_angle_distance.setText(f'Интервал передвижения {self.travel_time_min.value()} '
                                           f'- {self.travel_time_max.value()}')
         self.clear_axs()
-        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx], self.check_auto_mode)
+        self.stat_tabl = []
+        self.stat_tabl = calculate_step_result(self, [self.ax, self.bx, self.cx, self.dx, self.ex, self.fx], self.check_auto_mode)
         self.update_content(self._change_frame_slider.value())
 
     def set_title_axs(self):
@@ -403,9 +441,13 @@ class Open_Field_Widget(Abstract_Widget):
         self.bx.set_title('Передняя правая лапа')
         self.cx.set_title('Задняя левая лапа')
         self.dx.set_title('Задняя правая лапа')
+        self.ex.set_title('Левый коленный сустав')
+        self.fx.set_title('Правый коленный сустав')
 
     def clear_axs(self):
         self.ax.clear()
         self.bx.clear()
         self.cx.clear()
         self.dx.clear()
+        self.ex.clear()
+        self.fx.clear()
