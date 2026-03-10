@@ -95,10 +95,10 @@ class StepCycleDetector:
             # result[start_min:end_min+1] = data[max_point] + self.amplitude_offset
 
             # 2. Линейная интерполяция
-            self._fill_with_interpolation(result, data, start_min, max_point, end_min, i)
+            #self._fill_with_interpolation(result, data, start_min, max_point, end_min, i)
 
             # 3. Гауссово распределение
-            # self._fill_with_gaussian(result, data, start_min, max_point, end_min, i)
+            self._fill_with_gaussian(result, data, start_min, max_point, end_min, i)
 
         return result
 
@@ -170,7 +170,6 @@ class StepCycleDetector:
         # Объединяем и сортируем все пики
         all_peaks = sorted(peaks_max + peaks_min)
 
-        # Машина состояний для поиска циклов
         cycles = self._find_valid_cycles(data_init, all_peaks, peaks_max, peaks_min)
 
         # Визуализируем найденные циклы

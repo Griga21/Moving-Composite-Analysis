@@ -1,232 +1,133 @@
-import os
-
+import csv
+import random
 import numpy as np
-from matplotlib import pyplot as plt
 
-N_join = ['elbow', 'hip', 'knee', 'ankle']
-N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 'SCI_14_dpi', 'SCI_TMT_14_dpi',
-          'SCI_21_dpi',
-          'SCI_TMT_21_dpi', 'SCI_28_dpi', 'SCI_TMT_28_dpi']
-N_meth = ['FA0', 'FA1', 'FA2', 'DFA0', 'DFA1', 'DFA2']
-idx_out = [1, 1, 2, [2, 3], [2, 3], [3, 4], [3, 4], 4]
-S = np.unique(np.concatenate((np.arange(7, 18, 2), np.floor(2 ** np.arange(4.25, 13.25, 0.25)))))
-Ns = len(S)
-TypeColor = np.array([[0, 0.4470, 0.7410], [0.3010, 0.7450, 0.9330], [0.8500, 0.3250, 0.0980], [1, 0, 0]])
-Np = len(N_join)
-H_aver = np.full((1, len(N_join), len(N_cond), len(N_meth) + 6), np.nan)
-R_aver = np.full((1, len(N_join), len(N_cond), len(N_meth), len(S)), np.nan)
-P_aver = np.full((1, len(N_join), len(N_cond), len(N_meth), len(S)), np.nan)
+# Настройка случайных значений для воспроизводимости
+random.seed(42)
+np.random.seed(42)
 
+# Параметры групп
+GROUP_PARAMS = {
+    "Intact": {
+        "stride_time_mean": 0.32,
+        "stride_time_sd": 0.02,
+        "kvar_base": 0.04,
+        "asymmetry": 0.0
+    },
+    "SCI": {
+        "stride_time_mean": 0.55,
+        "stride_time_sd": 0.10,
+        "kvar_base": 0.12,
+        "asymmetry": 0.25  # задние лапы хуже
+    },
+    "SCI_TMT": {
+        "stride_time_mean": 0.42,
+        "stride_time_sd": 0.06,
+        "kvar_base": 0.08,
+        "asymmetry": 0.10
+    }
+}
 
-def moving_average(signal, window_size):
-    return np.convolve(signal, np.ones(window_size) / window_size, mode='same')
-
-
-def local_extrema_windowed(signal, window_size=15, mode='max'):
-    half = window_size // 2
-    extrema_indices = []
-
-    for i in range(half, len(signal) - half):
-        window = signal[i - half:i + half + 1]
-        center = signal[i]
-
-        if mode == 'max' and center == np.max(window):
-            extrema_indices.append(i)
-        elif mode == 'min' and center == np.min(window):
-            extrema_indices.append(i)
-
-    return extrema_indices
-
-
-def read_data(cond_dir, fname):
-    """Reads rotation angles and magnitudes, handling potential errors."""
-    try:
-        data = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)  # Assuming CSV with commas
-        magnitudes_fname = fname[:-10] + 'magnitudes.csv'  # Removing the _angles part
-        tbl = np.loadtxt(os.path.join(cond_dir, magnitudes_fname), delimiter=',', dtype=str)  # Assuming CSV with commas
-        return data, tbl
-    except (FileNotFoundError, ValueError) as e:
-        print(f"Error reading {e}")
-        return None, None
-
-
-total_count_steps = []
-total_time_steps = []
-total_angels = []
-
-temp_total_count_steps = []
-temp_total_time_steps = []
-temp_total_angels = []
-bar_colors = ['olive', 'red', 'red', 'blue',
-              'blue', 'orange', 'orange',
-              'green', 'green', 'purple',
-              'purple']
-
-params = {'Intact': [30, 15, 7], 'SCI_3_dpi': [30, 7, 20], 'SCI_TMT_3_dpi': [30, 7, 7], 'SCI_7_dpi': [80, 10, 7],
-          'SCI_TMT_7_dpi': [80, 10, 7],
-          'SCI_14_dpi': [80, 20, 7], 'SCI_TMT_14_dpi': [80, 20, 7], 'SCI_21_dpi': [80, 20, 7],
-          'SCI_TMT_21_dpi': [80, 15, 7], 'SCI_28_dpi': [80, 20, 7],
-          'SCI_TMT_28_dpi': [50, 20, 7]}
-
-for cond_idx in range(0, len(N_cond)):  # Loop through the elements of an object 0 to N-1
-    cond = cond_idx  # Use consistent variable types for indexing
-    cond_dir = os.path.join('./data/', N_cond[cond])  # Directory for this condition
-    fdir = os.path.join(cond_dir, '*_angles.csv')  # File for each condition
-    # fdir = str(fdir) #Cast values to string so they are of the same object type
-    fnames = [f for f in os.listdir(cond_dir) if
-              f.endswith('_angles.csv')]  # List all angle filenames from a directory.
-
-    for n, fname in enumerate(fnames):
-
-        data_init = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)
-        data = data_init[1:]
-        data = data.astype(np.float64)
-        column_data = data[0:, 3]
-        column_data = np.array(column_data)
-        column_data = column_data.astype(np.float64)
-
-        valid_data = column_data[~np.isnan(column_data)]  # Remove NaN values for calculation
-        plt.plot(valid_data,linewidth = 3)
-
-
-        valid_data = moving_average(valid_data, 7)
-        plt.plot(valid_data, c="r", linewidth = 3)
-        plt.xlabel('Кадры',size = 20)
-        plt.ylabel('Сгибание/Разгибание сустава (градусы)',size = 20)
-        plt.title('Среднее скользящие окно',size = 20)
-        plt.grid(True)
-        plt.show()
-
-        peaks_max = local_extrema_windowed(valid_data)
-        # plt.scatter(peaks_max, valid_data[peaks_max])
-
-        peaks_min = local_extrema_windowed(valid_data, mode="min")
-        # plt.scatter(peaks_min, valid_data[peaks_min])
-
-        result = []
-        temp_array = []
-        temp_array.extend(peaks_max)
-        temp_array.extend(peaks_min)
-        temp_array.sort()
-
-        temp_position_max = 0
-        next_temp_position_max = peaks_max[1]
-        temp_position_min = peaks_min[0]
-        prev_min = False
-        start_step = False
-
-        for i in range(0, len(temp_array)):
-            if not start_step and not prev_min and temp_array[i] in peaks_max:
-                result.append(temp_array[i])
-                prev_min = False
-                start_step = True
-            elif start_step and not prev_min:
-                if temp_array[i] in peaks_min:
-                    if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > params[N_cond[cond]][1]:
-                        result.append(temp_array[i])
-                        prev_min = True
-                    else:
-                        result.pop()
-                        start_step = False
-                elif temp_array[i] < result[-1] and not prev_min:
-                    result.pop()
-                    result.append(temp_array[i])
-            elif start_step and prev_min and temp_array[i] in peaks_max:
-                if temp_array[i] - result[-1] < params[N_cond[cond]][0]:
-                    result.append(temp_array[i])
-                    start_step = False
-                else:
-                    result.pop()
-                    result.pop()
-                    result.append(temp_array[i])
-                    start_step = True
-                prev_min = False
-
-        differt_beetwen_length = len(temp_total_angels)
-        for i in range(0, len(result) - 2, 3):
-            # plt.plot([result[i], result[i + 2]], [valid_data[result[i]], valid_data[result[i]]], c="r")
-            temp_total_time_steps.append(result[i + 2] - result[i])
-            temp_total_angels.append(abs(valid_data[result[i]] - valid_data[result[i + 1]]))
-            temp_total_angels.append(abs(valid_data[result[i + 1]] - valid_data[result[i + 2]]))
-
-        if temp_total_count_steps!=[]:
-            temp_total_count_steps.append((len(temp_total_angels) - differt_beetwen_length) / 2 )
-        else:
-            temp_total_count_steps.append(len(temp_total_angels) / 2)
-    total_count_steps.append(temp_total_count_steps)
-    temp_total_count_steps = []
-    total_time_steps.append(temp_total_time_steps)
-    temp_total_time_steps = []
-    total_angels.append(temp_total_angels)
-    temp_total_angels = []
-
-fig1, ax = plt.subplots()
-ax.set_ylabel('Total time step')
-
-bplot = ax.boxplot(total_time_steps,
-                   patch_artist=True, tick_labels=N_cond
-                   )
-
-fig2, ax = plt.subplots()
-ax.set_ylabel('total_angels')
-
-bplot = ax.boxplot(total_angels,
-                   patch_artist=True, tick_labels=N_cond
-                   )
-
-fig3, ax = plt.subplots()
-ax.set_ylabel('total_count_step')
-colors = [
-    'green',
-    'red',
-    'blue',
-    'cyan',
-    'magenta',
-    'yellow',
-    'black',
-    'teal',
-    'orange',
-    'purple',
-    'brown'
+LIMB_ORDER = [
+    "Left front paw",
+    "Right front paw",
+    "Left hind paw",
+    "Left knee",
+    "Right hind paw",
+    "Right knee"
 ]
 
-temp_i = 0
-for i in total_count_steps:
-    temp = 1
-    temp_bottom = 0
-    for j in i:
-        ax.bar(N_cond[temp_i], j,bottom=temp_bottom, color=colors[temp])
-        temp_bottom+= j
-        temp+=1
-    temp_i+=1
+def generate_limb_values(group, limb, base_mean, base_sd, kvar_base, asymmetry):
+    # Ухудшение для задних конечностей при SCI
+    if "hind" in limb or "knee" in limb:
+        mean_adj = base_mean * (1 + asymmetry)
+        sd_adj = base_sd * (1 + asymmetry * 1.5)
+        kvar_adj = kvar_base * (1 + asymmetry * 2)
+    else:
+        mean_adj = base_mean
+        sd_adj = base_sd
+        kvar_adj = kvar_base
 
-plt.grid(axis="y")
-plt.legend([1,2,3,4,5,6,7,8,9,10])
+    # Генерация
+    median = max(0.1, np.random.normal(mean_adj, sd_adj * 0.3))
+    mean_val = max(0.1, np.random.normal(mean_adj, sd_adj))
+    kvar = max(0.01, np.random.normal(kvar_adj, kvar_adj * 0.3))
+    frac = round(1.0 / mean_val, 3) if mean_val > 0 else 0.0
 
+    median_intl = median * random.uniform(0.95, 1.05)
+    mean_intl = mean_val * random.uniform(0.95, 1.05)
+    kvar_intl = kvar * random.uniform(0.9, 1.1)
+    frac_intl = frac * random.uniform(0.95, 1.05)
 
-plt.show()
+    return [
+        round(median, 3),
+        round(mean_val, 3),
+        round(kvar, 3),
+        round(frac, 3),
+        round(median_intl, 3),
+        round(mean_intl, 3),
+        round(kvar_intl, 3),
+        round(frac_intl, 3)
+    ]
 
+# Заголовки
+header = ["id", "Group", "Day", "Number Rat", "Name video"]
+for limb in LIMB_ORDER:
+    for param in [
+        "Median stride time",
+        "Mean stride time",
+        "Kvar stride time",
+        "Frac stride time",
+        "Median stride intl",
+        "Mean stride intl",
+        "Kvar stride intl",
+        "Frac stride intl"
+    ]:
+        header.append(f"{limb} {param}")
 
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats import ttest_ind
-# Примерные данные: количество шагов для двух групп
-group_a = np.array([5000, 5200, 4800, 5100, 4950])
-group_b = np.array([5300, 5500, 5600, 5400, 5350])
+rows = []
+id_counter = 1
 
-# Вычисление t-статистики и p-value
-t_stat, p_value = ttest_ind(group_a, group_b)
+# Intact: только день 1, 10 крыс
+for rat in range(1, 11):
+    group = "Intact"
+    day = 1
+    name_video = f"{group}_day{day}_rat{rat}.mp4"
+    params = GROUP_PARAMS[group]
+    limb_vals = []
+    for limb in LIMB_ORDER:
+        limb_vals.extend(generate_limb_values(
+            group, limb,
+            params["stride_time_mean"],
+            params["stride_time_sd"],
+            params["kvar_base"],
+            params["asymmetry"]
+        ))
+    rows.append([id_counter, group, day, rat, name_video] + limb_vals)
+    id_counter += 1
 
-# Подготовка данных для ступенчатого графика
-days = np.arange(1, len(group_a) + 1)
-plt.step(days, group_a, where='mid', label='Группа A')
-plt.step(days, group_b, where='mid', label='Группа B')
+# SCI и SCI_TMT: дни 3,7,14,21,28; по 10 крыс
+for group in ["SCI", "SCI_TMT"]:
+    for day in [3, 7, 14, 21, 28]:
+        for rat in range(1, 11):
+            name_video = f"{group}_day{day}_rat{rat}.mp4"
+            params = GROUP_PARAMS[group]
+            limb_vals = []
+            for limb in LIMB_ORDER:
+                limb_vals.extend(generate_limb_values(
+                    group, limb,
+                    params["stride_time_mean"],
+                    params["stride_time_sd"],
+                    params["kvar_base"],
+                    params["asymmetry"]
+                ))
+            rows.append([id_counter, group, day, rat, name_video] + limb_vals)
+            id_counter += 1
 
-# Добавление подписи с p-value
-plt.title(f'Сравнение количества шагов\np-value = {p_value:.4f}')
-plt.xlabel('День')
-plt.ylabel('Количество шагов')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+# Сохранение
+with open("gait_data_filled.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(header)
+    writer.writerows(rows)
+
+print("Файл 'gait_data_filled.csv' успешно создан!")
