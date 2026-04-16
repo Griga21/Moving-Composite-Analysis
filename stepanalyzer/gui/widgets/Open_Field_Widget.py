@@ -201,19 +201,12 @@ class Open_Field_Widget(Abstract_Widget):
         self.fx.plot()
 
         if position < 30:
-            self.ax.set_xlim(0, 60)
-            self.bx.set_xlim(0, 60)
-            self.cx.set_xlim(0, 60)
-            self.dx.set_xlim(0, 60)
-            self.ex.set_xlim(0, 60)
-            self.fx.set_xlim(0, 60)
+            x_limits = (0, 60)
         else:
-            self.ax.set_xlim(position - 30, position + 30)
-            self.bx.set_xlim(position - 30, position + 30)
-            self.cx.set_xlim(position - 30, position + 30)
-            self.dx.set_xlim(position - 30, position + 30)
-            self.ex.set_xlim(position - 30, position + 30)
-            self.fx.set_xlim(position - 30, position + 30)
+            x_limits = (position - 30, position + 30)
+
+        for axis in (self.ax, self.bx, self.cx, self.dx, self.ex, self.fx):
+            axis.set_xlim(*x_limits)
 
         self.vline_ax = self.ax.axvline(position, -200, 200, c="red", linestyle="--")
         self.vline_bx = self.bx.axvline(position, -200, 200, c="red", linestyle="--")
@@ -262,26 +255,26 @@ class Open_Field_Widget(Abstract_Widget):
             self.show_error_message(f"Error loading video: {e}")
 
     def slider_changed(self, position):
-        self.changed_frame(position)
+        self._show_frame_at_position(position)
 
     def slider_changed_by_button(self):
-        position = self._change_frame_slider.value() + 1
-        self._change_frame_slider.setValue(position)
-        self.changed_frame(position)
+        self._shift_frame_by(1)
 
     def slider_changed_by_button_back(self):
-        position = self._change_frame_slider.value() - 1
-        self._change_frame_slider.setValue(position)
-        self.changed_frame(position)
+        self._shift_frame_by(-1)
 
-    def changed_frame(self, position):
+    def _show_frame_at_position(self, position):
         try:
-            # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 show_frame_open_field(self, position)
                 self.update_content(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
+
+    def _shift_frame_by(self, step):
+        position = self._change_frame_slider.value() + step
+        self._change_frame_slider.setValue(position)
+        self._show_frame_at_position(position)
 
     def keyPressEvent(self, event):
         """Handle key press events for the slider navigation."""
@@ -289,14 +282,12 @@ class Open_Field_Widget(Abstract_Widget):
             new_value = self._change_frame_slider.value() + 1
             if new_value <= self._change_frame_slider.maximum():
                 self._change_frame_slider.setValue(new_value)
-                show_frame_open_field(self, new_value)
-                self.update_content(new_value)
+                self._show_frame_at_position(new_value)
         elif event.key() == Qt.Key_Left:  # Left arrow key
             new_value = self._change_frame_slider.value() - 1
             if new_value >= self._change_frame_slider.minimum():
                 self._change_frame_slider.setValue(new_value)
-                show_frame_open_field(self, new_value)
-                self.update_content(new_value)
+                self._show_frame_at_position(new_value)
         else:
             super().keyPressEvent(event)
 

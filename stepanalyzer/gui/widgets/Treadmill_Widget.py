@@ -40,7 +40,6 @@ class Treadmill_Widget(Abstract_Widget):
             (128, 128, 0),  # Olive
         ]
 
-
         # Widget for video
         self.image_label = QLabel()
 
@@ -156,7 +155,7 @@ class Treadmill_Widget(Abstract_Widget):
         self.update_content(self._change_frame_slider.value())
 
     def update_content(self, position):
-        # Обновляем график
+        # Update plot content around the current frame.
         self.ax.clear()
         if position < 60:
             x = np.linspace(0, 120, 120)
@@ -177,8 +176,9 @@ class Treadmill_Widget(Abstract_Widget):
 
         self.ax.plot(x, y)
         self.ax.plot(x1, y1)
-        self.ax.set_title(
-            f"График {self.file_name_video.split("/")[-2]} {self.file_name_video.split("_")[-2]} elbow_collarbone_paw")
+        video_group = self.file_name_video.split("/")[-2]
+        video_number = self.file_name_video.split("_")[-2]
+        self.ax.set_title(f"График {video_group} {video_number} elbow_collarbone_paw")
         self.ax.axvline(position, -200, 200, c="red", linestyle="--")
         self.canvas.draw()
 
@@ -279,35 +279,26 @@ class Treadmill_Widget(Abstract_Widget):
             self.show_error_message(f"Error loading CSV: {e}")
 
     def slider_changed(self, position):
-        try:
-            # Display the frame corresponding to the slider's position
-            if self.video_loaded:
-                show_frame(self, position)
-                self.update_content(position)
-        except Exception as e:
-            self.show_error_message(f"Error displaying frame: {e}")
+        self._show_frame_at_position(position)
 
     def slider_changed_by_button(self):
-        position = self._change_frame_slider.value() + 1
-        self._change_frame_slider.setValue(position)
+        self._shift_frame_by(1)
+
+    def slider_changed_by_button_back(self):
+        self._shift_frame_by(-1)
+
+    def _show_frame_at_position(self, position):
         try:
-            # Display the frame corresponding to the slider's position
             if self.video_loaded:
                 show_frame(self, position)
                 self.update_content(position)
         except Exception as e:
             self.show_error_message(f"Error displaying frame: {e}")
 
-    def slider_changed_by_button_back(self):
-        position = self._change_frame_slider.value() - 1
+    def _shift_frame_by(self, step):
+        position = self._change_frame_slider.value() + step
         self._change_frame_slider.setValue(position)
-        try:
-            # Display the frame corresponding to the slider's position
-            if self.video_loaded:
-                show_frame(self, position)
-                self.update_content(position)
-        except Exception as e:
-            self.show_error_message(f"Error displaying frame: {e}")
+        self._show_frame_at_position(position)
 
     def keyPressEvent(self, event):
         """Handle key press events for the slider navigation."""
@@ -315,14 +306,12 @@ class Treadmill_Widget(Abstract_Widget):
             new_value = self._change_frame_slider.value() + 1
             if new_value <= self._change_frame_slider.maximum():
                 self._change_frame_slider.setValue(new_value)
-                show_frame(self, new_value)
-                self.update_content(new_value)
+                self._show_frame_at_position(new_value)
         elif event.key() == Qt.Key_Left:  # Left arrow key
             new_value = self._change_frame_slider.value() - 1
             if new_value >= self._change_frame_slider.minimum():
                 self._change_frame_slider.setValue(new_value)
-                show_frame(self, new_value)
-                self.update_content(new_value)
+                self._show_frame_at_position(new_value)
         else:
             super().keyPressEvent(event)
 

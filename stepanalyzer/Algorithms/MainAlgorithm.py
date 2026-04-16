@@ -1,8 +1,12 @@
 import os
 
-from stepanalyzer.Algorithms.KinematicsFun import definition_step_cycle, calculate_number_time_steps, \
-    calculate_average_height
+from stepanalyzer.Algorithms.KinematicsFun import (
+    calculate_average_height,
+    calculate_number_time_steps,
+    definition_step_cycle,
+)
 from stepanalyzer.Algorithms.ReadDataFile import read_params
+from stepanalyzer.Algorithms.step_cycle_utils import parse_result_identity
 
 N_cond = ['Intact', 'SCI_3_dpi', 'SCI_TMT_3_dpi', 'SCI_7_dpi', 'SCI_TMT_7_dpi', 'SCI_14_dpi', 'SCI_TMT_14_dpi',
           'SCI_21_dpi',
@@ -39,32 +43,18 @@ if __name__ == "__main__":
                 result_step_cycle[key_map])
 
             if key_map[-2] == "_":
-                str = key_map[:-2]
+                trajectory_dir = key_map[:-2]
             else:
-                str = key_map[:-3]
-            result_average_height[key_map] = calculate_average_height(result_step_cycle[key_map],
-                                                                      trajectory_path + "/" + str + "/" + key_map + ".csv")
-            temp = []
-            if fname.split("_")[1] != "TMT":
-                temp.append(fname.split("_")[0])
-            else:
-                temp.append(fname.split("_")[0] + "_" + fname.split("_")[1])
+                trajectory_dir = key_map[:-3]
+            result_average_height[key_map] = calculate_average_height(
+                result_step_cycle[key_map],
+                trajectory_path + "/" + trajectory_dir + "/" + key_map + ".csv",
+            )
 
-                # Добавление дня
-                # Добавление номер крысы
-            if fname.split("_")[0] == "Intact":
-                temp.append(None)
-                temp.append(fname.split("_")[1])
-            elif fname.split("_")[1] == "TMT":
-                temp.append(fname.split("_")[2])
-                temp.append(fname.split("_")[4])
-            else:
-                temp.append(fname.split("_")[1])
-                temp.append(fname.split("_")[3])
-
+            group_name, day, rat_number = parse_result_identity(key_map)
+            temp = [group_name, day, rat_number]
             temp.append(params_for_video[fname.split("_angles")[0]][0])
             temp.append(params_for_video[fname.split("_angles")[0]][1])
-
             temp.append(result_average_max[key_map])
             temp.append(result_average_min[key_map])
             temp.append(result_average_time_step[key_map] / 60)

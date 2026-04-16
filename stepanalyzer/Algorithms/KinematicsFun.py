@@ -3,26 +3,12 @@ import os
 import numpy as np
 
 from stepanalyzer.Algorithms.ReadDataFile import read_csv_coordinate
-
-
-def moving_average(signal, window_size):
-    return np.convolve(signal, np.ones(window_size) / window_size, mode='same')
-
-
-def local_extrema_windowed(signal, window_size=15, mode='max'):
-    half = window_size // 2
-    extrema_indices = []
-
-    for i in range(half, len(signal) - half):
-        window = signal[i - half:i + half + 1]
-        center = signal[i]
-
-        if mode == 'max' and center == np.max(window):
-            extrema_indices.append(i)
-        elif mode == 'min' and center == np.min(window):
-            extrema_indices.append(i)
-
-    return extrema_indices
+from stepanalyzer.Algorithms.step_cycle_utils import (
+    build_step_cycle,
+    extract_valid_signal,
+    local_extrema_windowed,
+    moving_average,
+)
 
 
 def definition_step_cycle(cond_dir, fname, params_for_video):
@@ -32,15 +18,14 @@ def definition_step_cycle(cond_dir, fname, params_for_video):
     @:param fname - file name
     @:return dict{Group+Number_Rut:[Step Params, Angle Distance]}
     """
-    data_init = np.loadtxt(os.path.join(cond_dir, fname), delimiter=',', dtype=str)
+    data_init = np.loadtxt(os.path.join(cond_dir, fname), delimiter=",", dtype=str)
     data = data_init[1:]
     data = data.astype(np.float64)
     column_data = data[0:, 3]
     column_data = np.array(column_data)
     column_data = column_data.astype(np.float64)
 
-    valid_data = column_data[~np.isnan(column_data)]
-
+    valid_data = extract_valid_signal(column_data)
     valid_data = moving_average(valid_data, 7)
     peaks_max = local_extrema_windowed(valid_data)
     peaks_min = local_extrema_windowed(valid_data, mode="min")
@@ -53,52 +38,25 @@ def definition_step_cycle(cond_dir, fname, params_for_video):
         average_min = average_angle(peaks_min, valid_data)
 
     if average_max < average_min:
-        print(f'Ошибка в расчетах в файле {fname}')
+        print(f"РћС€РёР±РєР° РІ СЂР°СЃС‡РµС‚Р°С… РІ С„Р°Р№Р»Рµ {fname}")
 
-    result = []
-    temp_array = []
-    temp_array.extend(peaks_max)
-    temp_array.extend(peaks_min)
-    temp_array.sort()
-
-    prev_min = False
-    start_step = False
-
-    for i in range(0, len(temp_array)):
-        if not start_step and not prev_min and temp_array[i] in peaks_max:
-            result.append(temp_array[i])
-            prev_min = False
-            start_step = True
-        elif start_step and not prev_min:
-            if temp_array[i] in peaks_min:
-                if abs(valid_data[temp_array[i]] - valid_data[result[-1]]) > \
-                        params_for_video.get(fname.split("_angles")[0])[1]:
-                    result.append(temp_array[i])
-                    prev_min = True
-                else:
-                    result.pop()
-                    start_step = False
-            elif temp_array[i] < result[-1] and not prev_min:
-                result.pop()
-                result.append(temp_array[i])
-        elif start_step and prev_min and temp_array[i] in peaks_max:
-            if temp_array[i] - result[-2] < params_for_video.get(fname.split("_angles")[0])[0]:
-                result.append(temp_array[i])
-                start_step = False
-            else:
-                result.pop()
-                result.pop()
-                result.append(temp_array[i])
-                start_step = True
-            prev_min = False
+    step_distance, angle_distance = params_for_video.get(fname.split("_angles")[0])
+    result = build_step_cycle(
+        valid_data,
+        peaks_max,
+        peaks_min,
+        step_distance,
+        angle_distance,
+        use_previous_peak_for_step=True,
+    )
     return result, average_max, average_min
 
 
 def average_angle(list_points, valid_data):
-    sum = 0
-    for i in range(len(list_points)):
-        sum += valid_data[list_points[i]]
-    return sum / len(list_points)
+    total = 0
+    for point in list_points:
+        total += valid_data[point]
+    return total / len(list_points)
 
 
 def calculate_number_time_steps(list_steps):
@@ -114,20 +72,21 @@ def calculate_number_time_steps(list_steps):
             average_time += list_steps[i + 2] - list_steps[i]
             count_step += 1
         return count_step, average_time / count_step
-    else:
-        return 0, 0
+
+    return 0, 0
 
 
 def calculate_average_height(list_steps, data_path):
     coordinates = read_csv_coordinate(data_path, "toe_y")
-    sum = 0
+    total = 0
     counter = 0
-    for i in range(0, len(list_steps)-1, 3):
-        if coordinates[list_steps[i+1]] - coordinates[list_steps[i]]>0:
-            sum+=coordinates[list_steps[i+1]] - coordinates[list_steps[i]]
-            counter+=1
+    for i in range(0, len(list_steps) - 1, 3):
+        height_delta = coordinates[list_steps[i + 1]] - coordinates[list_steps[i]]
+        if height_delta > 0:
+            total += height_delta
+            counter += 1
 
-    if counter!=0 and sum!=0:
-        return sum/counter
-    else:
-        return 0
+    if counter != 0 and total != 0:
+        return total / counter
+
+    return 0
