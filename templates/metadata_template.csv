@@ -1,0 +1,4 @@
+Group,Day,Number Rat,Name video,Step Distance,Angle Distance
+Intact,0,1,treadmill_intact_1.avi,30,15
+SCI,7,3,treadmill_sci_7_dpi_3.avi,30,15
+SCI_TMT,14,5,treadmill_sci_tmt_14_dpi_5.avi,25,10
