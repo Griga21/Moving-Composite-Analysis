@@ -1,1 +1,46 @@
-data
+# Local environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Raw research data and local exports
+data/
+Trajectory/
+videos/
+*.avi
+*.mp4
+*.mkv
+*.mov
+*.xlsx
+*.xls
+
+# Generated analysis outputs
+gait_analysis_plots/
+Result.csv
+result_diki_fuller_test.csv
+statistics_by_group.csv
+gait_data_filled.csv
+stepanalyzer/Algorithms/Result.csv
+stepanalyzer/Algorithms/movement_analysis_results.csv
+
+# Keep documented input schemas in git
+!templates/
+!templates/**

@@ -10,7 +10,7 @@ def show_frame(self, frame_number):
         if success:
             # Overlay the frame number in the upper right corner
             text = f"Frame: {frame_number}"
-            title = f"{self.name_video.split("/")[-1]}"
+            title = f'{self.name_video.split("/")[-1]}'
             font = cv2.FONT_HERSHEY_SIMPLEX
             font_scale = 1
             color = (255, 255, 255)  # White text
@@ -77,7 +77,7 @@ def show_frame_open_field(self, frame_number):
         if success:
             # Overlay the frame number in the upper right corner
             text = f"Frame: {frame_number}"
-            title = f"{self.name_video.split("/")[-1]}"
+            title = f'{self.name_video.split("/")[-1]}'
             font = cv2.FONT_HERSHEY_SIMPLEX
             font_scale = 1
             color = (255, 255, 255)  # White text
