@@ -1,0 +1,6 @@
+frame,nose_x,nose_y,left_front_paw_x,left_front_paw_y,right_front_paw_x,right_front_paw_y,left_hind_paw_x,left_hind_paw_y,right_hind_paw_x,right_hind_paw_y,tail_base_x,tail_base_y
+0,120,220,96,250,142,248,92,303,148,305,120,330
+1,122,219,99,248,144,247,94,301,151,304,122,329
+2,124,218,103,246,147,246,97,299,154,303,124,328
+3,127,217,106,245,150,245,100,298,157,302,127,327
+4,130,216,110,244,153,244,104,297,160,301,130,326
